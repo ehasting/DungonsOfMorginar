@@ -1,3 +1,8 @@
 .DS_Store
 DungonsOfMorginar
 CMakeFiles
+CMakeCache.txt
+CMakeLists.txt.user
+DungonsOfMorginar.cbp
+Makefile
+cmake_install.cmake

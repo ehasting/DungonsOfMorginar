@@ -111,7 +111,14 @@ void TheGame::SetupCommands()
     Action actionGo("go");
     actionGo.ActionFunction = [&] {
          if (this->loc.FindNewRoom(prompt.GetCommandList().at(1)))
+                {
              this->hero.Moves++;
+             for (Monster n : mobs.TheMonsters)
+             {
+                  if(n.ShouldIMove())
+                      n.MoveMosterRandom(this->loc.Map);
+             }
+         }
     };
     this->prompt.Actions.push_back(actionGo);
 }
@@ -169,6 +176,9 @@ void TheGame::Run()
     this->loc.Map.push_back(GardenFountain);
     */
     Monsters mobs;
+
+
+
     mobs.GenerateMonsters(10);
     bool IsMoreMonsters = true;
     for (auto n : this->maze.TheMaze)

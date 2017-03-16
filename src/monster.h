@@ -8,6 +8,8 @@ class Monster : public Character
 public:
     Monster();
     RoomCoords Coords;
+    bool ShouldIMove();
+    void MoveMosterRandom();
     void SetMonsterLocation(RoomCoords loc)
     {
         this->Coords = loc;

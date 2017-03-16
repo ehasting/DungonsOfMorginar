@@ -57,6 +57,44 @@ public:
         return std::to_string(this->X) + "," + std::to_string(this->Y) + "," + std::to_string(this->Z);
     }
 
+    bool IsNeigbour(RoomCoords roomCoords)
+    {
+        int x = roomCoords.X;
+        int y = roomCoords.Y;
+        int z = roomCoords.Z;
+        if ( ((this->X == x) || (this->X+1 == x) || (this->X-1 == x))
+             && ((this->Y == y) || (this->Y+1 == x) || (this->Y-1 == x)) )
+            return true;
+        return false;
+    }
+
+    RoomCoords GetNeightbourRoom(std::string direction)
+    {
+        RoomCoords yourRoom(*this);
+        if (direction == "north")
+        {
+            yourRoom.Y++;
+            return yourRoom;
+        }
+        if (direction == "south")
+        {
+            yourRoom.Y--;
+            return yourRoom;
+        }
+        if (direction == "east")
+        {
+            yourRoom.X++;
+            return yourRoom;
+        }
+        if (direction == "west")
+        {
+            yourRoom.X--;
+            return yourRoom;
+        }
+        return RoomCoords();
+
+    }
+
     int X;
     int Y;
     int Z;
@@ -65,7 +103,13 @@ public:
 class Location
 {
 public:
-
+    static const std::string NORTH = "north";
+    static std::string SOUTH = "south";
+    static std::string EAST = "east";
+    static std::string WEST = "west";
+    static std::string UP = "up";
+    static std::string DOWN = "down";
+    static std::string DIRECTIONS[6]  = { Location::NORTH, Location::SOUTH, Location::EAST, Location::WEST, Location::UP, Location::DOWN };
     Location() {
         this->IsVisited = false;
     }

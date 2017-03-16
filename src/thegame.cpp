@@ -33,7 +33,7 @@ SOFTWARE.
 #include "tools.h"
 #include "action.h"
 #include "asciirenderengine.h"
-
+#include "monsters.h"
 
 TheGame::TheGame()
 {
@@ -110,7 +110,8 @@ void TheGame::SetupCommands()
 
     Action actionGo("go");
     actionGo.ActionFunction = [&] {
-         this->loc.FindNewRoom(prompt.GetCommandList().at(1));
+         if (this->loc.FindNewRoom(prompt.GetCommandList().at(1)))
+             this->hero.Moves++;
     };
     this->prompt.Actions.push_back(actionGo);
 }
@@ -134,9 +135,9 @@ void TheGame::Run()
     render.ClearScreen();
 
     //std::cout << "The Game" << std::endl;
-    render.Print("The Game", AsciiRenderEngine::BLUE, 0);
-    render.Print(std::string(render.GetLastChar()-1, '-'), AsciiRenderEngine::WHITE, 1);
-
+    render.Print("The Game", RenderEngine::BLUE, 0);
+    render.Print(std::string(render.GetLastChar()-1, '-'), RenderEngine::WHITE, 1);
+    /*
     Item KeyToEntrance(1, "dirtykey", "laying on the floor under some papers", "this key seems to belonging to an old lock");
 
 
@@ -166,7 +167,19 @@ void TheGame::Run()
     this->loc.Map.push_back(OutsideHouse);
     this->loc.Map.push_back(DriveWay);
     this->loc.Map.push_back(GardenFountain);
-
+    */
+    Monsters mobs;
+    mobs.GenerateMonsters(10);
+    bool IsMoreMonsters = true;
+    for (auto n : this->maze.TheMaze)
+    {
+        this->loc.Map.push_back(n.second);
+        while (IsMoreMonsters && (Tools::Dice(1,20) > 10))
+        {
+            std::cout << "Moster placed" << std::endl;
+            IsMoreMonsters = mobs.SetNextMonsterCoords(n.second.Coords);
+        }
+    }
     this->loc.Init();
 
     this->SetupCommands();
@@ -179,17 +192,26 @@ void TheGame::Run()
     {
         this->RecalculateScreen();
         this->hero.ShowCharacterLine(render, this->PLACEMENT_STATUSBAR);
-        render.Print(std::string(render.GetLastChar()-1, '-'), AsciiRenderEngine::WHITE, this->PLACEMENT_STATUSBARSEP);
+        render.Print(std::string(render.GetLastChar()-1, '-'), RenderEngine::WHITE, this->PLACEMENT_STATUSBARSEP);
         this->loc.CurrentRoom->ShowRoom(render, this->PLACEMENT_ROOMDISPLAY);
         this->hero.ShowInventory(render, this->PLACEMENT_INVENTORY);
+        auto monstershere = mobs.GetMonsters(this->loc.CurrentRoom->Coords);
+        int nextmonster = this->PLACEMENT_INVENTORY+3;
+        for (auto monstersinroom : monstershere)
+        {
+            render.Print("" + monstersinroom.Name, RenderEngine::RED, nextmonster++);
+        }
+
+        render.Print("Visited Rooms: " + std::to_string(this->loc.Visited.size()) + " of "+ std::to_string(this->loc.Map.size()) +" rooms, (you said: " +  prompt.GetCommands() + ")", RenderEngine::GREEN, this->PLACEMENT_LASTCOMMAND);
         render.Update();
         this->prompt.InputPrompt(" >");
 
-        render.Print(" -- you said: " +  prompt.GetCommands(), AsciiRenderEngine::GREEN, this->PLACEMENT_LASTCOMMAND);
+
         if (!this->prompt.EvaluatePrompt())
         {
             // default action if no command match!
-            this->loc.FindNewRoom(prompt.GetCommands());
+            if(this->loc.FindNewRoom(prompt.GetCommands()))
+                this->hero.Moves++;
         }
     }
 }

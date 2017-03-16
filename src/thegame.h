@@ -25,16 +25,18 @@ SOFTWARE.
 #define THEGAME_H
 #include "promptparser.h"
 #include "locations.h"
-#include "character.h"
+#include "mazegenerator.h"
+#include "hero.h"
 
 class TheGame
 {
 private:
     PromptParser prompt;
     Locations loc;
-    Character hero;
+    Hero hero;
     bool running;
     AsciiRenderEngine render;
+    MazeGenerator maze;
 public:
     TheGame();
     void SetupCommands();

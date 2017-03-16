@@ -32,8 +32,9 @@ class Locations
 {
 public:
     Locations();
-    void FindNewRoom(std::string);
+    bool FindNewRoom(std::string);
     std::vector<Location> Map;
+    std::map<std::string, bool> Visited;
 
     Location *CurrentRoom;
 

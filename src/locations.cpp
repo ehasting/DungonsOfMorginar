@@ -33,7 +33,7 @@ Locations::Locations()
 }
 
 
-void Locations::FindNewRoom(std::string input)
+bool Locations::FindNewRoom(std::string input)
 {
     this->CommandIsKnown = false;
     for (auto ex : this->CurrentRoom->Linked)
@@ -52,13 +52,17 @@ void Locations::FindNewRoom(std::string input)
                 {
                     if (this->Map.at(roomcnt).ID == ex.second->ID)
                     {
+                        this->CurrentRoom->IsVisited = true;
                         this->CurrentRoom = &this->Map.at(roomcnt);
-                        return;
+                        if (!this->Visited.count(this->CurrentRoom->ID))
+                            this->Visited[this->CurrentRoom->ID] = true;
+                        return true;
                     }
                 }
                 std::cout << "ERROR!" << std::endl;
-                return;
+                return false;
             }
         }
     }
+    return false;
 }

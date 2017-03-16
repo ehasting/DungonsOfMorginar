@@ -26,13 +26,16 @@ SOFTWARE.
 #include "action.h"
 #include <iostream>
 
-void run()
+auto run() -> void
 {
-    std::cout << "Test" << std::endl;
+    std::cout << "Test from run()" << std::endl;
 }
 
 int main (int argc, char *argv[])
 {
+    //auto t = std::string("test");
+    //std::cout << t << std::endl;;
+    //run();
     TheGame game;
     game.Run();
     return 0;

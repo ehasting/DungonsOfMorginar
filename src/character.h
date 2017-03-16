@@ -35,7 +35,7 @@ private:
     std::mt19937 rng;
 public:
     Character();
-    void GenerateCharacter();
+    virtual void GenerateCharacter();
     std::string Name;
     int Health;
     int CurrentHealth;
@@ -44,10 +44,7 @@ public:
     int Dexterety;
     int Strength;
     int Intelligence;
-    std::vector<Item*> Inventory;
-    void ShowCharacter(AsciiRenderEngine &render, int lineoffset);
-    void ShowCharacterLine(AsciiRenderEngine &render, int lineoffset);
-    void ShowInventory(AsciiRenderEngine &render, int lineoffset);
+    int Moves;
 };
 
 #endif // CHARACTER_H

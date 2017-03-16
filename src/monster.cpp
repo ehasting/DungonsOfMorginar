@@ -1,6 +1,6 @@
 #include "monster.h"
 
-Monster::Monster()
+Monster::Monster() : Character()
 {
-
+    this->Name = "Unamed Monster";
 }

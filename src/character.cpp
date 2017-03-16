@@ -38,6 +38,7 @@ Character::Character()
     this->Dexterety = 0;
     this->Intelligence = 0;
     this->Strength = 0;
+    this->Moves = 0;
     this->GenerateCharacter();
 }
 
@@ -56,32 +57,7 @@ void Character::GenerateCharacter()
     this->CurrentMana = this->Mana;
 }
 
-void Character::ShowCharacterLine(AsciiRenderEngine &render, int lineoffset)
-{
 
-    render.Print("[" + this->Name + "] Health: " + std::to_string(this->CurrentHealth) + "/" + std::to_string(this->Health) +
-                 " | Mana: " + std::to_string(this->CurrentMana) + "/"  + std::to_string(this->Mana) +
-                 " | Str/Dex/Int: " + std::to_string(this->Strength) + "/" + std::to_string(this->Dexterety) + "/" + std::to_string(this->Intelligence),
-                 AsciiRenderEngine::GREEN,
-                 lineoffset);
-}
-
-void Character::ShowCharacter(AsciiRenderEngine &render, int lineoffset)
-{
-    render.Print("Name: " + this->Name, AsciiRenderEngine::BLUE, lineoffset++);
-    render.Print("Health: " + std::to_string(this->Health) + " | Mana: " + std::to_string(this->Mana), AsciiRenderEngine::BLUE, lineoffset++);
-    render.Print("Str/Dex/Int: " + std::to_string(this->Strength) + "/" + std::to_string(this->Dexterety) + "/" + std::to_string(this->Intelligence), AsciiRenderEngine::BLUE, lineoffset++);
-    this->ShowInventory(render, lineoffset++);
-}
-
-void Character::ShowInventory(AsciiRenderEngine &render, int lineoffset)
-{
-    render.Print("Inventory:", AsciiRenderEngine::WHITE, lineoffset++);
-    for (auto inv : this->Inventory)
-    {
-        render.Print(" * " + inv->Name + " - " + inv->Description, AsciiRenderEngine::BLUE, lineoffset++);
-    }
-}
 
 int Character::Dice(int min, int max)
 {

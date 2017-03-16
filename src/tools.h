@@ -32,7 +32,11 @@ SOFTWARE.
 class Tools
 {
 public:
+
     Tools();
+
+
+
     static std::string toLowercase(std::string text)
     {
         std::string output("");
@@ -54,6 +58,17 @@ public:
         if(buff != "") v.push_back(buff);
 
         return v;
+    }
+    static int Dice(int min, int max)
+    {
+        std::mt19937 rng;
+        rng.seed(std::random_device()());
+        std::uniform_int_distribution<std::mt19937::result_type> dist6(min, max);
+        int retvalue = dist6(rng);
+
+        //std::cout << "min("<< min << ") " << "max("<< max << ") rnd: " << retvalue << std::endl;
+
+        return retvalue;
     }
 
 };

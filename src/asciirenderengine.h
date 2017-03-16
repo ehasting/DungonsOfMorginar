@@ -35,7 +35,6 @@ private:
     int Cursor;
 public:
     std::string RESETCOLOR;
-    enum COLOR { RED, BLUE, WHITE, GREEN, YELLOW };
     int GetLastLine()
     {
         return this->TermHeight-1;

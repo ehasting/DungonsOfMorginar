@@ -29,23 +29,64 @@ SOFTWARE.
 #include "item.h"
 #include "location.h"
 #include "asciirenderengine.h"
+#include "tools.h"
+
+class RoomCoords
+{
+public:
+    RoomCoords() {}
+
+
+    RoomCoords(const RoomCoords &copy)
+    {
+        this->X = copy.X;
+        this->Y = copy.Y;
+        this->Z = copy.Z;
+    }
+
+    RoomCoords(std::string SerializedRoomCoords);
+
+    RoomCoords(int x, int y, int z) : RoomCoords()
+    {
+        this->X = x;
+        this->Y = y;
+        this->Z = z;
+    }
+    std::string to_string()
+    {
+        return std::to_string(this->X) + "," + std::to_string(this->Y) + "," + std::to_string(this->Z);
+    }
+
+    int X;
+    int Y;
+    int Z;
+};
 
 class Location
 {
 public:
-    Location(std::string id, std::string description);
+
+    Location() {
+        this->IsVisited = false;
+    }
+    Location(RoomCoords coord);
+    Location(std::string id, std::string description, RoomCoords coord);
     bool operator ==(const Location &Right) const
     {
         return (this->ID == Right.ID);
     }
+    std::string IsVisitedLabel();
     std::string ID;
     std::string Description;
     std::map<std::string, Location*> Linked;
     std::map<std::string, Item*> Blockers;
     std::vector<Item*> ItemList;
-
+    RoomCoords Coords;
+    bool IsNeigbour(RoomCoords roomCoords);
+    RoomCoords GetNeightbourRoom(std::string direction);
     void ShowRoom(AsciiRenderEngine &render, int lineoffset);
     bool IsDirectionBlocked(std::string diretion);
+    bool IsVisited;
 
 };
 

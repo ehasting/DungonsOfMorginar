@@ -23,12 +23,14 @@ SOFTWARE.
 */
 #ifndef RENDERENGINE_H
 #define RENDERENGINE_H
-
+#include <iostream>
 
 class RenderEngine
 {
 public:
     RenderEngine();
+    enum COLOR { RED, BLUE, WHITE, GREEN, YELLOW };
+    virtual std::string ResolveColor(COLOR color) = 0;
 };
 
 #endif // RENDERENGINE_H

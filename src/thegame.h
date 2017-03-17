@@ -27,6 +27,7 @@ SOFTWARE.
 #include "locations.h"
 #include "mazegenerator.h"
 #include "hero.h"
+#include "monsters.h"
 
 class TheGame
 {
@@ -37,6 +38,7 @@ private:
     bool running;
     AsciiRenderEngine render;
     MazeGenerator maze;
+    Monsters mobs;
 public:
     TheGame();
     void SetupCommands();

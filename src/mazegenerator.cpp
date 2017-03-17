@@ -29,73 +29,53 @@ SOFTWARE.
 MazeGenerator::MazeGenerator()
 {
     this->RoomIdIndex = 0;
-    this->directions[0] = "north";
-    this->directions[1] = "south";
-    this->directions[2] = "east";
-    this->directions[3] = "west";
 
 
     int maxroom = 0;
-    std::string fromdirection = this->directions[0];
-    std::string thisroomid = this->GenerateRoomID(maxroom, "blackhole", fromdirection, true);
-    std::string commingfrom = "blackhole";
+    std::string thisroomid = this->GenerateRoomID(maxroom, (Direction::Directions)0, true);
     RoomCoords currentcoords(10,10,0);
-    RoomCoords n(currentcoords.to_string());
-    std::vector<std::string> roomids;
-    this->TheMaze[currentcoords.to_string()] = Location(thisroomid, "this is room with id: " + thisroomid, currentcoords);
+    std::vector<RoomCoords> roomids;
+    this->TheMaze[currentcoords.to_string()] = Location(thisroomid, "The sky is clear and this is room with id: " + thisroomid, currentcoords);
     while (true)
     {
         roomids.clear();
-
-
-        for(auto n : this->directions)
+        for (int n : {0, 1, 2, 3})
         {
-            if (this->Dice(0,20) > 14)
+            if (Tools::getInstance().Dice(0, 20) > 14)
             {
-                std::string neighbourid = this->GenerateRoomID(maxroom, thisroomid, n.second, true);
+                Direction::Directions movingto_dir = (Direction::Directions)n;
+                std::string neighbourid = this->GenerateRoomID(maxroom, movingto_dir, true);
                 std::cout << "Generate neigbour" << std::endl;
 
-                RoomCoords neigbourcoords = this->TheMaze[currentcoords.to_string()].GetNeightbourRoom(n.second);
-                if(this->TheMaze.count(neigbourcoords.to_string()))
+                RoomCoords neigbourcoords = this->TheMaze[currentcoords.to_string()].Coords.GetNeightbourRoomCoords(movingto_dir);
+                if(!this->TheMaze.count(neigbourcoords.to_string()))
                 {
-                    this->TheMaze[currentcoords.to_string()].Linked[n.second] = &this->TheMaze[neigbourcoords.to_string()];
-                    this->TheMaze[neigbourcoords.to_string()].Linked[this->GetBackWay(n.second)] = &this->TheMaze[currentcoords.to_string()];
+                    this->TheMaze[neigbourcoords.to_string()] = Location(neighbourid, "Dark shadow lurks and this is room with id: " + neighbourid, neigbourcoords);
                 }
-                else {
-                    this->TheMaze[neigbourcoords.to_string()] = Location(neighbourid, "this is room with id: " + neighbourid, this->TheMaze[currentcoords.to_string()].GetNeightbourRoom(n.second));
-                    this->TheMaze[currentcoords.to_string()].Linked[n.second] = &this->TheMaze[neigbourcoords.to_string()];
-                    this->TheMaze[neigbourcoords.to_string()].Linked[this->GetBackWay(n.second)] = &this->TheMaze[currentcoords.to_string()];
-                }
-                roomids.push_back(neigbourcoords.to_string());
+                this->TheMaze[currentcoords.to_string()].Linked[movingto_dir] = &this->TheMaze[neigbourcoords.to_string()];
+                this->TheMaze[neigbourcoords.to_string()].Linked[Direction::GetBackWay(movingto_dir)] = &this->TheMaze[currentcoords.to_string()];
+                roomids.push_back(neigbourcoords);
             }
         }
 
         if (roomids.size() == 0)
         {
-            std::string defaultdirection = "north";
-            std::string neighbourid = this->GenerateRoomID(maxroom, thisroomid, defaultdirection, true);
-            RoomCoords neigbourcoords = this->TheMaze[currentcoords.to_string()].GetNeightbourRoom(defaultdirection);
+            Direction::Directions movingto_dir = (Direction::Directions)Tools::getInstance().Dice(0,3);
+
+            std::string neighbourid = this->GenerateRoomID(maxroom, movingto_dir, true);
+            RoomCoords neigbourcoords = this->TheMaze[currentcoords.to_string()].Coords.GetNeightbourRoomCoords(movingto_dir);
             std::cout << "Generate neigbour" << std::endl;
-            if(this->TheMaze.count(neigbourcoords.to_string()))
+            if(!this->TheMaze.count(neigbourcoords.to_string()))
             {
-                this->TheMaze[currentcoords.to_string()].Linked[defaultdirection] = &this->TheMaze[neigbourcoords.to_string()];
-                this->TheMaze[neigbourcoords.to_string()].Linked[this->GetBackWay(defaultdirection)] = &this->TheMaze[currentcoords.to_string()];
-            }
-            else
-            {
-
-            }
-
-            this->TheMaze[neigbourcoords.to_string()] = Location(neighbourid, "this is room with id: " + neighbourid, this->TheMaze[currentcoords.to_string()].GetNeightbourRoom(defaultdirection));
-            this->TheMaze[currentcoords.to_string()].Linked[defaultdirection] = &this->TheMaze[neigbourcoords.to_string()];
-            this->TheMaze[neigbourcoords.to_string()].Linked[this->GetBackWay(defaultdirection)] = &this->TheMaze[currentcoords.to_string()];
-            roomids.push_back(neigbourcoords.to_string());
+                this->TheMaze[neigbourcoords.to_string()] = Location(neighbourid, "Misty forrest ahead and this is room with id: " + neighbourid, neigbourcoords);
+            }            
+            this->TheMaze[currentcoords.to_string()].Linked[movingto_dir] = &this->TheMaze[neigbourcoords.to_string()];
+            this->TheMaze[neigbourcoords.to_string()].Linked[Direction::GetBackWay(movingto_dir)] = &this->TheMaze[currentcoords.to_string()];
+            roomids.push_back(neigbourcoords);
         }
 
-        int nextroomidindex = this->Dice(0, roomids.size()-1);
-        commingfrom = thisroomid;
+        int nextroomidindex = Tools::getInstance().Dice(0, roomids.size()-1);
         currentcoords = roomids.at(nextroomidindex);
-        thisroomid = this->TheMaze[currentcoords.to_string()].ID;
 
 
         maxroom++;
@@ -110,28 +90,18 @@ MazeGenerator::MazeGenerator()
 
 
 
-void MazeGenerator::GenerateNeigbour(Location &source, std::string going, Location &neighbour)
+void MazeGenerator::GenerateNeigbour(Location &source, Direction::Directions going, Location &neighbour)
 {
-    neighbour.Linked[this->GetBackWay(going)] = &source;
+    neighbour.Linked[Direction::GetBackWay(going)] = &source;
 }
 
-int MazeGenerator::Dice(int min, int max)
+Direction::Directions MazeGenerator::GetNextWay(Direction::Directions commingfrom)
 {
-    rng.seed(std::random_device()());
-    std::uniform_int_distribution<std::mt19937::result_type> dist6(min, max);
-    return dist6(this->rng);
-}
-
-std::string MazeGenerator::GetNextWay(std::string commingfrom)
-{
-    std::string rval;
-
-
     while (true) {
-        int retvalue = this->Dice(0,3);
-        if (this->directions[retvalue] != commingfrom)
+        int retvalue = Tools::getInstance().Dice(0,3);
+        if ((Direction::Directions)retvalue != commingfrom)
         {
-            return this->directions[retvalue];
+            return (Direction::Directions)retvalue;
         }
     }
 }

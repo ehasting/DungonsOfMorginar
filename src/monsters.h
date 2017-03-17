@@ -14,7 +14,7 @@ public:
         std::vector<Monster> rval;
         for(auto n : this->TheMonsters)
         {
-            if (n.Coords.to_string() == coords.to_string())
+            if (n.Coords == coords)
                 rval.push_back(n);
 
         }

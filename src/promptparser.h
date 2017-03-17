@@ -45,7 +45,7 @@ public:
     }
     std::vector<std::string> GetCommandList()
     {
-        return Tools::explode(this->input, ' ');
+        return Tools::getInstance().explode(this->input, ' ');
     }
 
     bool IsCommand(std::string requestedcommand)

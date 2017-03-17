@@ -32,35 +32,21 @@ class MazeGenerator
 public:
     MazeGenerator();
     std::map<std::string, Location> TheMaze;
-    void GenerateNeigbour(Location &source, std::string goingto, Location &neighbour);
+    void GenerateNeigbour(Location &source, Direction::Directions goingto, Location &neighbour);
 private:
     int RoomIdIndex;
     std::vector<int> RoomIDList;
-    std::string GetBackWay(std::string going)
-    {
-        if (going == "north")
-            return "south";
-        if (going == "south")
-            return "north";
-        if (going == "west")
-            return "east";
-        if (going == "east")
-            return "west";
-    return "";
-    }
-    std::string GetNextWay(std::string commingfrom);
-    std::mt19937 rng;
-    std::string GenerateRoomID(int index, std::string fromroom, std::string fromdirection, bool nextroom)
+
+    Direction::Directions GetNextWay(Direction::Directions commingfrom);
+    std::string GenerateRoomID(int index, Direction::Directions fromdirection, bool nextroom)
     {
         if (nextroom)
             this->RoomIdIndex++;
-        std::string returnid = std::to_string(index) + "-" + std::to_string(this->RoomIdIndex) + "-" + fromroom + "_" + fromdirection;
-        std::cout << returnid << std::endl;
-
+        std::string returnid = std::to_string(index) + "-" + std::to_string(this->RoomIdIndex) + "_" +Direction::to_string(fromdirection);
         return returnid;
     }
-    int Dice(int min, int max);
-    std::map<int, std::string> directions;
+
+
 };
 
 #endif // MAZEGENERATOR_H

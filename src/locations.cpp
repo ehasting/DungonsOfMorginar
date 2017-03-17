@@ -29,27 +29,26 @@ SOFTWARE.
 
 Locations::Locations()
 {
-    this->CommandIsKnown = true;
 }
 
 
-bool Locations::FindNewRoom(std::string input)
+bool Locations::FindNewRoom(Direction::Directions dir)
 {
-    this->CommandIsKnown = false;
     for (auto ex : this->CurrentRoom->Linked)
     {
-        if (input == Tools::toLowercase(ex.first))
+        std::cout << "links" << std::endl;
+        if ( dir == ex.first)
         {
             // std::cout << "Exit found!" << std::endl;
-            if (this->CurrentRoom->IsDirectionBlocked(input))
+            if (this->CurrentRoom->IsDirectionBlocked(dir))
             {
                 //std::cout << "Direction is blocked" << std::endl;
             }
             else
             {
-                this->CommandIsKnown = true;
                 for (int roomcnt = 0; roomcnt < this->Map.size(); roomcnt++)
                 {
+                    std::cout << "maps" << std::endl;
                     if (this->Map.at(roomcnt).ID == ex.second->ID)
                     {
                         this->CurrentRoom->IsVisited = true;

@@ -4,6 +4,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 set(HEADER_FILES
+        src/tools.cpp
     src/character.cpp
     src/hero.cpp
     src/monster.cpp
@@ -12,11 +13,13 @@ set(HEADER_FILES
     src/locations.cpp
     src/action.cpp
     src/promptparser.cpp
-    src/tools.cpp
+
     src/item.cpp
     src/thegame.cpp
     src/renderengine.cpp
     src/asciirenderengine.cpp
     src/mazegenerator.cpp)
+
+
 
 add_executable(DungonsOfMorginar src/launcher.cpp ${HEADER_FILES})

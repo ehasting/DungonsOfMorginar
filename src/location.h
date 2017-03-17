@@ -31,14 +31,115 @@ SOFTWARE.
 #include "asciirenderengine.h"
 #include "tools.h"
 
+
+class Direction
+{
+public:
+    enum Directions {
+        NORTH,
+        SOUTH,
+        EAST,
+        WEST,
+        UP,
+        DOWN,
+        NA
+    };
+    static Directions from_string(std::string dir)
+    {
+        dir = Tools::getInstance().toLowercase(dir);
+        if (dir == "north" || dir == "n")
+            return Directions::NORTH;
+        else if (dir == "south" || dir == "s")
+            return Directions::SOUTH;
+        else if (dir == "east" || dir == "e")
+            return Directions::EAST;
+        else if (dir == "west" || dir == "w")
+            return Directions::WEST;
+        else if (dir == "up" || dir == "u")
+            return Directions::UP;
+        else if (dir == "down" || dir == "d")
+            return Directions::DOWN;
+        return Directions::NA;
+    }
+
+    static std::string to_string(Directions dir)
+    {
+        switch (dir)
+        {
+        case Directions::NORTH:
+            return "north";
+            break;
+        case Directions::SOUTH:
+            return "south";
+            break;
+        case Directions::EAST:
+            return "east";
+            break;
+        case Direction::WEST:
+            return "west";
+            break;
+        case Directions::UP:
+            return "up";
+            break;
+        case Directions::DOWN:
+            return "down";
+            break;
+        default:
+            return "na";
+            break;
+        }
+    }
+
+    static Directions GetBackWay(Directions going)
+    {
+        switch (going)
+        {
+            case Direction::Directions::NORTH:
+                return Direction::Directions::SOUTH;
+
+            case Direction::Directions::SOUTH:
+                return Direction::Directions::NORTH;
+
+            case Direction::Directions::EAST:
+                return Direction::Directions::WEST;
+
+            case Direction::Directions::WEST:
+                return Direction::Directions::EAST;
+
+            case Direction::Directions::UP:
+                return Direction::Directions::DOWN;
+
+            case Direction::Directions::DOWN:
+                return Direction::Directions::UP;
+
+            default:
+                return going;
+        }
+    }
+};
+
+
 class RoomCoords
 {
 public:
-    RoomCoords() {}
+    int X;
+    int Y;
+    int Z;
 
+    RoomCoords()
+    {
+        if (!this->IsSet)
+        {
+            this->X = 1024;
+            this->Y = 1024;
+            this->Z = 1024;
+            this->IsSet = true;
+        }
+    }
 
     RoomCoords(const RoomCoords &copy)
     {
+        this->IsSet = true;
         this->X = copy.X;
         this->Y = copy.Y;
         this->Z = copy.Z;
@@ -46,11 +147,21 @@ public:
 
     RoomCoords(std::string SerializedRoomCoords);
 
-    RoomCoords(int x, int y, int z) : RoomCoords()
+    RoomCoords(int x, int y, int z)
     {
+        this->IsSet = true;
         this->X = x;
         this->Y = y;
         this->Z = z;
+    }
+
+    bool operator ==(const RoomCoords &Right) const
+    {
+        if ( (this->X == Right.X) &&
+             (this->Y == Right.Y) &&
+             (this->Z == Right.Z) )
+            return true;
+        return false;
     }
     std::string to_string()
     {
@@ -68,50 +179,52 @@ public:
         return false;
     }
 
-    RoomCoords GetNeightbourRoom(std::string direction)
+    RoomCoords GetNeightbourRoomCoords(Direction::Directions direction)
     {
-        RoomCoords yourRoom(*this);
-        if (direction == "north")
+        RoomCoords yourRoom(this->X, this->Y, this->Z);
+        switch (direction)
+        {
+        case Direction::Directions::NORTH:
         {
             yourRoom.Y++;
             return yourRoom;
         }
-        if (direction == "south")
+        case Direction::Directions::SOUTH:
         {
             yourRoom.Y--;
             return yourRoom;
         }
-        if (direction == "east")
+        case Direction::Directions::EAST:
         {
             yourRoom.X++;
             return yourRoom;
         }
-        if (direction == "west")
+        case Direction::Directions::WEST:
         {
             yourRoom.X--;
             return yourRoom;
         }
-        return RoomCoords();
-
+        default:
+            std::cout << "Direction Unknown" << std::endl;
+            return yourRoom;
+       }
     }
+private:
+    bool IsSet;
 
-    int X;
-    int Y;
-    int Z;
+
 };
+
+
+
+
 
 class Location
 {
 public:
-    static const std::string NORTH = "north";
-    static std::string SOUTH = "south";
-    static std::string EAST = "east";
-    static std::string WEST = "west";
-    static std::string UP = "up";
-    static std::string DOWN = "down";
-    static std::string DIRECTIONS[6]  = { Location::NORTH, Location::SOUTH, Location::EAST, Location::WEST, Location::UP, Location::DOWN };
     Location() {
         this->IsVisited = false;
+        std::cout << "location construction " << this->Coords.to_string();
     }
     Location(RoomCoords coord);
     Location(std::string id, std::string description, RoomCoords coord);
@@ -122,14 +235,12 @@ public:
     std::string IsVisitedLabel();
     std::string ID;
     std::string Description;
-    std::map<std::string, Location*> Linked;
-    std::map<std::string, Item*> Blockers;
+    std::map<Direction::Directions, Location*> Linked;
+    std::map<Direction::Directions, Item*> Blockers;
     std::vector<Item*> ItemList;
     RoomCoords Coords;
-    bool IsNeigbour(RoomCoords roomCoords);
-    RoomCoords GetNeightbourRoom(std::string direction);
     void ShowRoom(AsciiRenderEngine &render, int lineoffset);
-    bool IsDirectionBlocked(std::string diretion);
+    bool IsDirectionBlocked(Direction::Directions diretion);
     bool IsVisited;
 
 };

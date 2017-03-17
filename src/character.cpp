@@ -31,6 +31,7 @@ SOFTWARE.
 #include "item.h"
 #include <vector>
 #include "asciirenderengine.h"
+#include "tools.h"
 
 Character::Character()
 {
@@ -46,27 +47,13 @@ Character::Character()
 void Character::GenerateCharacter()
 {
 
-    this->Dexterety = this->Dice(3, 12);
-    this->Intelligence = this->Dice(3, 12);
-    this->Strength = this->Dice(3, 12);
+    this->Dexterety = Tools::getInstance().Dice(3, 12);
+    this->Intelligence = Tools::getInstance().Dice(3, 12);
+    this->Strength = Tools::getInstance().Dice(3, 12);
 
-    this->Health = this->Dice(50,125*(this->Strength/2));
-    this->Mana = this->Dice(50, (this->Intelligence*2)*12 );
+    this->Health = Tools::getInstance().Dice(50,125*(this->Strength/2));
+    this->Mana = Tools::getInstance().Dice(50, (this->Intelligence*2)*12 );
 
     this->CurrentHealth = this->Health;
     this->CurrentMana = this->Mana;
-}
-
-
-
-int Character::Dice(int min, int max)
-{
-
-    rng.seed(std::random_device()());
-    std::uniform_int_distribution<std::mt19937::result_type> dist6(min, max);
-    int retvalue = dist6(this->rng);
-
-    //std::cout << "min("<< min << ") " << "max("<< max << ") rnd: " << retvalue << std::endl;
-
-    return retvalue;
 }

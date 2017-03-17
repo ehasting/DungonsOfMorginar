@@ -32,13 +32,11 @@ class Locations
 {
 public:
     Locations();
-    bool FindNewRoom(std::string);
+    bool FindNewRoom(Direction::Directions dir);
     std::vector<Location> Map;
     std::map<std::string, bool> Visited;
 
     Location *CurrentRoom;
-
-    bool CommandIsKnown;
 
     void Init()
     {

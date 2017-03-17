@@ -23,7 +23,6 @@ SOFTWARE.
 */
 #ifndef CHARACTER_H
 #define CHARACTER_H
-#include <random>
 #include "item.h"
 #include <vector>
 #include "asciirenderengine.h"
@@ -31,8 +30,6 @@ SOFTWARE.
 class Character
 {
 private:
-    int Dice(int min, int max);
-    std::mt19937 rng;
 public:
     Character();
     virtual void GenerateCharacter();

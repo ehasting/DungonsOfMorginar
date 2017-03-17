@@ -24,20 +24,25 @@ SOFTWARE.
 #ifndef TOOLS_H
 #define TOOLS_H
 #include <string>
-#include <character.h>
-#include <location.h>
 #include <locale>
 #include <vector>
+#include <random>
+#include <iostream>
 
 class Tools
 {
 public:
-
+    static Tools& getInstance()
+    {
+        static Tools    instance; // Guaranteed to be destroyed.
+        // Instantiated on first use.
+        return instance;
+    }
+    Tools(Tools const&) = delete;
+    void operator=(Tools const&) = delete;
     Tools();
 
-
-
-    static std::string toLowercase(std::string text)
+    std::string toLowercase(std::string text)
     {
         std::string output("");
         std::locale loc;
@@ -45,7 +50,7 @@ public:
             output.push_back((char)std::tolower(elem, loc));
         return output;
     }
-    static const std::vector<std::string> explode(const std::string& s, const char& c)
+    const std::vector<std::string> explode(const std::string& s, const char& c)
     {
         std::string buff{""};
         std::vector<std::string> v;
@@ -53,24 +58,24 @@ public:
         for(auto n:s)
         {
             if(n != c) buff+=n; else
-            if(n == c && buff != "") { v.push_back(buff); buff = ""; }
+                if(n == c && buff != "") { v.push_back(buff); buff = ""; }
         }
         if(buff != "") v.push_back(buff);
 
         return v;
     }
-    static int Dice(int min, int max)
+    int Dice(int min, int max)
     {
-        std::mt19937 rng;
-        rng.seed(std::random_device()());
         std::uniform_int_distribution<std::mt19937::result_type> dist6(min, max);
-        int retvalue = dist6(rng);
+        int retvalue = dist6(this->rng);
 
         //std::cout << "min("<< min << ") " << "max("<< max << ") rnd: " << retvalue << std::endl;
 
         return retvalue;
     }
+private:
+    std::mt19937 rng;
 
 };
-
 #endif // TOOLS_H
+

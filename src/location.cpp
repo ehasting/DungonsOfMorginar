@@ -27,7 +27,8 @@ SOFTWARE.
 
 RoomCoords::RoomCoords(std::string SerializedRoomCoords)
 {
-    auto n = Tools::explode(SerializedRoomCoords, ',');
+    this->IsSet = true;
+    auto n = Tools::getInstance().explode(SerializedRoomCoords, ',');
     this->X = std::stoi(n.at(0));
     this->Y = std::stoi(n.at(1));
     this->Z = std::stoi(n.at(2));
@@ -35,9 +36,7 @@ RoomCoords::RoomCoords(std::string SerializedRoomCoords)
 
 Location::Location(RoomCoords coord) : Location()
 {
-    this->Coords.X = coord.X;
-    this->Coords.Y = coord.Y;
-    this->Coords.Z = coord.Z;
+    this->Coords = RoomCoords(coord.X, coord.Y, coord.Z);
 }
 
 Location::Location(std::string id, std::string description, RoomCoords coord) : Location(coord)
@@ -46,43 +45,6 @@ Location::Location(std::string id, std::string description, RoomCoords coord) : 
     this->Description = description;
 }
 
-bool Location::IsNeigbour(RoomCoords roomCoords)
-{
-    int x = roomCoords.X;
-    int y = roomCoords.Y;
-    int z = roomCoords.Z;
-    if ( ((this->Coords.X == x) || (this->Coords.X+1 == x) || (this->Coords.X-1 == x))
-         && ((this->Coords.Y == y) || (this->Coords.Y+1 == x) || (this->Coords.Y-1 == x)) )
-        return true;
-    return false;
-}
-
-RoomCoords Location::GetNeightbourRoom(std::string direction)
-{
-    RoomCoords yourRoom = this->Coords;
-    if (direction == "north")
-    {
-        yourRoom.Y++;
-        return yourRoom;
-    }
-    if (direction == "south")
-    {
-        yourRoom.Y--;
-        return yourRoom;
-    }
-    if (direction == "east")
-    {
-        yourRoom.X++;
-        return yourRoom;
-    }
-    if (direction == "west")
-    {
-        yourRoom.X--;
-        return yourRoom;
-    }
-    return RoomCoords();
-
-}
 
 std::string Location::IsVisitedLabel()
 {
@@ -107,7 +69,7 @@ void Location::ShowRoom(AsciiRenderEngine &render, int lineoffset)
     render.Print("Exits:", RenderEngine::WHITE, linecnt++);
     for (auto ex : this->Linked)
     {
-        std::string o = " - "  + ex.first + " (" + ex.second->ID  + ")";
+        std::string o = " - "  + Direction::to_string(ex.first) + " (" + ex.second->ID  + ")";
 
         if (this->Blockers.count(ex.first) == 1)
         {
@@ -120,7 +82,7 @@ void Location::ShowRoom(AsciiRenderEngine &render, int lineoffset)
     }
 }
 
-bool Location::IsDirectionBlocked(std::string direction)
+bool Location::IsDirectionBlocked(Direction::Directions direction)
 {
     for (auto block : this->Blockers)
     {

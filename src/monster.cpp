@@ -9,26 +9,27 @@ Monster::Monster() : Character()
     this->Name = "Dragon";
     this->LastMessage = "";
     this->Color = (RenderEngine::COLOR)Tools::getInstance().Dice(0, 4);
-    this->IsReady = true;
 }
 
 bool Monster::ShouldIMove()
 {
-    if (Tools::getInstance().Dice(1,20) > 3)
+    if (Tools::getInstance().Dice(1,20) < 4)
+    {
+        std::cout << "Yes lets move the monster" << std::endl;
         return true;
+    }
     return false;
 }
 
-void Monster::MoveMosterRandom(std::vector<Location> &Map)
+void Monster::MoveMosterRandom(std::vector<Location> Map)
 {
     int dice;
     Direction::Directions direction;
-
+    RoomCoords trymoveto;
     while (true) {
         dice = Tools::getInstance().Dice(0,3);
         direction = (Direction::Directions)dice;
-        std::cout << this->Coords.to_string() << std::endl;
-        RoomCoords trymoveto = this->Coords.GetNeightbourRoomCoords(direction);
+        trymoveto = this->Coords.GetNeightbourRoomCoords(direction);
         bool found = false;
         for( Location n : Map )
         {
@@ -39,14 +40,14 @@ void Monster::MoveMosterRandom(std::vector<Location> &Map)
                 break;
             }
         }
-        std::cout << "move" << std::endl;
+
         if (!found)
             continue;
         if (Tools::getInstance().Dice(0,6) > 3)
-           break;
+                break;
     }
     this->Moves++;
-    this->LastMessage = "Moved from " + this->Coords.to_string();
-    this->Coords = this->Coords.GetNeightbourRoomCoords(direction);
-
+    this->LastMessage = "Moved "+ this->Name +" from " + this->Coords.to_string() + " -> " + trymoveto.to_string();
+    this->Coords = RoomCoords(trymoveto);
+    std::cout << this->LastMessage << std::endl;
 }

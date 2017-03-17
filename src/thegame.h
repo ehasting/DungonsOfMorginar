@@ -38,7 +38,7 @@ private:
     bool running;
     AsciiRenderEngine render;
     MazeGenerator maze;
-    Monsters mobs;
+    Monsters *mobs;
 public:
     TheGame();
     void SetupCommands();

@@ -10,6 +10,7 @@ public:
     void ShowCharacter(AsciiRenderEngine &render, int lineoffset);
     void ShowCharacterLine(AsciiRenderEngine &render, int lineoffset);
     void ShowInventory(AsciiRenderEngine &render, int lineoffset);
+    long Experience;
 };
 
 #endif // HERO_H

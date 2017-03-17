@@ -1,29 +1,22 @@
 #include "monsters.h"
 #include "monster.h"
 
-Monsters::Monsters()
-{
-
-}
-
-void Monsters::GenerateMonsters(int numbers)
+Monsters::Monsters(int numberOfMonsters)
 {
     this->TheMonsters.clear();
-    for(int x = 0; x < numbers; x++)
-    {
-        Monster tmp;
-        tmp.GenerateCharacter();
-        this->TheMonsters.push_back(tmp);
-    }
+    this->MonsterCount = numberOfMonsters;
 }
 
-bool Monsters::SetNextMonsterCoords(RoomCoords coords)
+
+bool Monsters::GenerateNextMonster(RoomCoords coords)
 {
-    if ( (this->interatorcounter+1) < this->TheMonsters.size() )
+    if (this->TheMonsters.size() <= this->MonsterCount)
     {
-        std::cout << "Moster " << this->interatorcounter << " placed: " << coords.to_string() << std::endl;
-        this->TheMonsters.at(this->interatorcounter).SetMonsterLocation(coords);
-        this->interatorcounter++;
+        Monster newmonster;
+        newmonster.GenerateCharacter();
+        newmonster.SetMonsterLocation(coords);
+        newmonster.Name = "Dragon Monster " + std::to_string(this->TheMonsters.size());
+        this->TheMonsters.push_back(newmonster);
         return true;
     }
     return false;

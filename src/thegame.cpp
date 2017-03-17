@@ -38,6 +38,7 @@ SOFTWARE.
 TheGame::TheGame()
 {
     this->running = true;
+    this->mobs = new Monsters(10);
 }
 
 
@@ -114,14 +115,13 @@ void TheGame::SetupCommands()
         if (this->loc.FindNewRoom(input_direction))
         {
             this->hero.Moves++;
-
-             for (Monster n : this->mobs.TheMonsters)
-             {
-                 std::cout << "monsters " << n.Coords.to_string() << std::endl;
-                 if(n.ShouldIMove())
-                     n.MoveMosterRandom(this->loc.Map);
-             }
-
+            for (int x = 0; x < this->mobs->TheMonsters.size(); x++)
+            {
+                if(this->mobs->TheMonsters[x].ShouldIMove())
+                {
+                    this->mobs->TheMonsters[x].MoveMosterRandom(this->loc.Map);
+                }
+            }
         }
     };
     this->prompt.Actions.push_back(actionGo);
@@ -183,14 +183,13 @@ void TheGame::Run()
 
 
 
-    this->mobs.GenerateMonsters(10);
     bool IsMoreMonsters = true;
     for (auto n : this->maze.TheMaze)
     {
         this->loc.Map.push_back(n.second);
         while (IsMoreMonsters && (Tools::getInstance().Dice(1,20) > 10))
         {
-            IsMoreMonsters = this->mobs.SetNextMonsterCoords(n.second.Coords);
+            IsMoreMonsters = this->mobs->GenerateNextMonster(n.second.Coords);
         }
     }
     this->loc.Init();
@@ -208,11 +207,10 @@ void TheGame::Run()
         render.Print(std::string(render.GetLastChar()-1, '-'), RenderEngine::WHITE, this->PLACEMENT_STATUSBARSEP);
         this->loc.CurrentRoom->ShowRoom(render, this->PLACEMENT_ROOMDISPLAY);
         this->hero.ShowInventory(render, this->PLACEMENT_INVENTORY);
-        auto monstershere = this->mobs.GetMonsters(this->loc.CurrentRoom->Coords);
         int nextmonster = this->PLACEMENT_INVENTORY+3;
-        for (Monster monstersinroom : monstershere)
+        for (Monster monstersinroom : this->mobs->GetMonsters(this->loc.CurrentRoom->Coords))
         {
-            render.Print("" + monstersinroom.Name + "("+ monstersinroom.LastMessage +")", monstersinroom.Color, nextmonster++);
+            render.Print("" + monstersinroom.Name + "("+ monstersinroom.LastMessage +") Moves: " + std::to_string(monstersinroom.Moves), monstersinroom.Color, nextmonster++);
         }
 
         render.Print("Visited Rooms: " + std::to_string(this->loc.Visited.size()) + " of "+ std::to_string(this->loc.Map.size()) +" rooms, (you said: " +  prompt.GetCommands() + ")", RenderEngine::GREEN, this->PLACEMENT_LASTCOMMAND);

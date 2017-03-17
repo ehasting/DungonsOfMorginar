@@ -94,26 +94,26 @@ public:
     {
         switch (going)
         {
-            case Direction::Directions::NORTH:
-                return Direction::Directions::SOUTH;
+        case Direction::Directions::NORTH:
+            return Direction::Directions::SOUTH;
 
-            case Direction::Directions::SOUTH:
-                return Direction::Directions::NORTH;
+        case Direction::Directions::SOUTH:
+            return Direction::Directions::NORTH;
 
-            case Direction::Directions::EAST:
-                return Direction::Directions::WEST;
+        case Direction::Directions::EAST:
+            return Direction::Directions::WEST;
 
-            case Direction::Directions::WEST:
-                return Direction::Directions::EAST;
+        case Direction::Directions::WEST:
+            return Direction::Directions::EAST;
 
-            case Direction::Directions::UP:
-                return Direction::Directions::DOWN;
+        case Direction::Directions::UP:
+            return Direction::Directions::DOWN;
 
-            case Direction::Directions::DOWN:
-                return Direction::Directions::UP;
+        case Direction::Directions::DOWN:
+            return Direction::Directions::UP;
 
-            default:
-                return going;
+        default:
+            return going;
         }
     }
 };
@@ -160,7 +160,9 @@ public:
         if ( (this->X == Right.X) &&
              (this->Y == Right.Y) &&
              (this->Z == Right.Z) )
+        {
             return true;
+        }
         return false;
     }
     std::string to_string()
@@ -168,7 +170,7 @@ public:
         return std::to_string(this->X) + "," + std::to_string(this->Y) + "," + std::to_string(this->Z);
     }
 
-    bool IsNeigbour(RoomCoords roomCoords)
+    bool IsNeigbour(RoomCoords &roomCoords)
     {
         int x = roomCoords.X;
         int y = roomCoords.Y;
@@ -179,39 +181,40 @@ public:
         return false;
     }
 
-    RoomCoords GetNeightbourRoomCoords(Direction::Directions direction)
+    void Move(Direction::Directions &direction)
+    {
+        this->MoveReference(direction, *this);
+    }
+
+    RoomCoords GetNeightbourRoomCoords(Direction::Directions &direction)
     {
         RoomCoords yourRoom(this->X, this->Y, this->Z);
-        switch (direction)
-        {
-        case Direction::Directions::NORTH:
-        {
-            yourRoom.Y++;
-            return yourRoom;
-        }
-        case Direction::Directions::SOUTH:
-        {
-            yourRoom.Y--;
-            return yourRoom;
-        }
-        case Direction::Directions::EAST:
-        {
-            yourRoom.X++;
-            return yourRoom;
-        }
-        case Direction::Directions::WEST:
-        {
-            yourRoom.X--;
-            return yourRoom;
-        }
-        default:
-            std::cout << "Direction Unknown" << std::endl;
-            return yourRoom;
-       }
+        this->MoveReference(direction, yourRoom);
+        return yourRoom;
     }
 private:
     bool IsSet;
-
+    void MoveReference(Direction::Directions &direction, RoomCoords &coords)
+    {
+        switch (direction)
+        {
+        case Direction::Directions::NORTH:
+            coords.Y++;
+            break;
+        case Direction::Directions::SOUTH:
+            coords.Y--;
+            break;
+        case Direction::Directions::EAST:
+            coords.X++;
+            break;
+        case Direction::Directions::WEST:
+            coords.X--;
+            break;
+        default:
+            std::cout << "Direction Unknown (" << direction << ")" << std::endl;
+            break;
+        }
+    }
 
 };
 

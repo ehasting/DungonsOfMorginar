@@ -2,7 +2,7 @@
 
 Hero::Hero() : Character()
 {
-
+    this->Experience = 0;
 }
 
 void Hero::ShowCharacterLine(AsciiRenderEngine &render, int lineoffset)

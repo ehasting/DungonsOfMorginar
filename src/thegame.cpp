@@ -132,22 +132,13 @@ void TheGame::RecalculateScreen()
     if (this->render.IsTerminalSizeChanged())
     {
         this->render = AsciiRenderEngine();
-        this->PLACEMENT_FEEDBACKLINE = render.GetLastLine();
-        this->PLACEMENT_STATUSBAR = 0;
-        this->PLACEMENT_STATUSBARSEP = this->PLACEMENT_STATUSBAR + 1;
-        this->PLACEMENT_ROOMDISPLAY = int(render.GetLastLine() / 4) * 1;
-        this->PLACEMENT_INVENTORY = int(render.GetLastLine()/4) * 3;
     }
 }
 
 void TheGame::Run()
 {
 
-    render.ClearScreen();
-
     //std::cout << "The Game" << std::endl;
-    render.Print("The Game", RenderEngine::BLUE, 0);
-    render.Print(std::string(render.GetLastChar()-1, '-'), RenderEngine::WHITE, 1);
     /*
     Item KeyToEntrance(1, "dirtykey", "laying on the floor under some papers", "this key seems to belonging to an old lock");
 
@@ -196,24 +187,27 @@ void TheGame::Run()
 
     this->SetupCommands();
 
-    //this->hero.ShowCharacter(this->render, 15);
-
-
-
+    render.ClearScreen();
     while(this->running)
     {
+        int n = 0;
         this->RecalculateScreen();
-        this->hero.ShowCharacterLine(render, this->PLACEMENT_STATUSBAR);
-        render.Print(std::string(render.GetLastChar()-1, '-'), RenderEngine::WHITE, this->PLACEMENT_STATUSBARSEP);
-        this->loc.CurrentRoom->ShowRoom(render, this->PLACEMENT_ROOMDISPLAY);
-        this->hero.ShowInventory(render, this->PLACEMENT_INVENTORY);
-        int nextmonster = this->PLACEMENT_INVENTORY+3;
+        this->hero.ShowCharacterLine(render, n);
+        render.Print(std::string(render.GetLastChar()-1, '-'), RenderEngine::WHITE, n);
+        render.Print("Visited Rooms: " + std::to_string(this->loc.Visited.size()) + " of "+ std::to_string(this->loc.Map.size()) +" rooms, (you said: " +  prompt.GetCommands() + ")", RenderEngine::GREEN, n);
+        n++; // Space
+        this->loc.CurrentRoom->ShowRoom(render, n);
+        n++; // Space
+        this->hero.ShowInventory(render, n);
+
+        n = n+3;
         for (Monster monstersinroom : this->mobs->GetMonsters(this->loc.CurrentRoom->Coords))
         {
-            render.Print("" + monstersinroom.Name + "("+ monstersinroom.LastMessage +") Moves: " + std::to_string(monstersinroom.Moves), monstersinroom.Color, nextmonster++);
+            render.Print( monstersinroom.Name + " ("+ monstersinroom.LastMessage +") Moves: " + std::to_string(monstersinroom.Moves), monstersinroom.Color, n);
+            render.Print( monstersinroom.GetCharacterString(), monstersinroom.Color, n, 2);
         }
 
-        render.Print("Visited Rooms: " + std::to_string(this->loc.Visited.size()) + " of "+ std::to_string(this->loc.Map.size()) +" rooms, (you said: " +  prompt.GetCommands() + ")", RenderEngine::GREEN, this->PLACEMENT_LASTCOMMAND);
+
         render.Update();
         this->prompt.InputPrompt(" >");
 

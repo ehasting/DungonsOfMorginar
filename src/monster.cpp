@@ -15,7 +15,6 @@ bool Monster::ShouldIMove()
 {
     if (Tools::getInstance().Dice(1,20) < 4)
     {
-        std::cout << "Yes lets move the monster" << std::endl;
         return true;
     }
     return false;
@@ -47,7 +46,6 @@ void Monster::MoveMosterRandom(std::vector<Location> Map)
                 break;
     }
     this->Moves++;
-    this->LastMessage = "Moved "+ this->Name +" from " + this->Coords.to_string() + " -> " + trymoveto.to_string();
+    this->LastMessage = "Moved from " +  Direction::to_string(Direction::GetBackWay(direction));
     this->Coords = RoomCoords(trymoveto);
-    std::cout << this->LastMessage << std::endl;
 }

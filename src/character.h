@@ -42,6 +42,7 @@ public:
     int Strength;
     int Intelligence;
     int Moves;
+    virtual std::string GetCharacterString();
 };
 
 #endif // CHARACTER_H

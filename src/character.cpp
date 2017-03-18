@@ -57,3 +57,10 @@ void Character::GenerateCharacter()
     this->CurrentHealth = this->Health;
     this->CurrentMana = this->Mana;
 }
+
+std::string Character::GetCharacterString()
+{
+    return "[" + this->Name + "] Health: " + std::to_string(this->CurrentHealth) + "/" + std::to_string(this->Health) +
+            " | Mana: " + std::to_string(this->CurrentMana) + "/"  + std::to_string(this->Mana) +
+            " | Str/Dex/Int: " + std::to_string(this->Strength) + "/" + std::to_string(this->Dexterety) + "/" + std::to_string(this->Intelligence) + "  Moves: " + std::to_string(this->Moves);
+}

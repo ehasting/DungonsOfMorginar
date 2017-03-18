@@ -25,6 +25,8 @@ SOFTWARE.
 #include <iostream>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <string>
+#include "location.h"
 
 AsciiRenderEngine::AsciiRenderEngine()
 {
@@ -60,12 +62,6 @@ bool AsciiRenderEngine::IsTerminalSizeChanged()
     return false;
 }
 
-void AsciiRenderEngine::Print(std::string text)
-{
-    this->ScreenBuffer[this->Cursor] = text;
-    this->Cursor++;
-}
-
 std::string AsciiRenderEngine::ResolveColor(COLOR color)
 {
     switch(color)
@@ -84,10 +80,10 @@ std::string AsciiRenderEngine::ResolveColor(COLOR color)
     }
 }
 
-void AsciiRenderEngine::Print(std::string text, COLOR color, int line, int lineoffset)
+
+void AsciiRenderEngine::Print(std::string text, COLOR color, int &line, int lineoffset)
 {
     std::string output;
-    int currline = line;
     if (text.length() > this->TermWidth)
     {
         int cnt = 0;
@@ -96,7 +92,7 @@ void AsciiRenderEngine::Print(std::string text, COLOR color, int line, int lineo
             if (((char)ch == ' ') && cnt > (this->TermWidth/4)*3 )
             {
                 output.push_back((char)ch);
-                this->ScreenBuffer[currline++] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
+                this->ScreenBuffer[line++] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
                 output.clear();
                 cnt = 0;
             }
@@ -104,11 +100,12 @@ void AsciiRenderEngine::Print(std::string text, COLOR color, int line, int lineo
                 output.push_back((char)ch);
             cnt++;
         }
-        this->ScreenBuffer[currline++] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
+        this->ScreenBuffer[line++] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
     }
     else {
-        this->ScreenBuffer[currline] = this->ResolveColor(color) + std::string(lineoffset, ' ') + text + this->RESETCOLOR;
+        this->ScreenBuffer[line] = this->ResolveColor(color) + std::string(lineoffset, ' ') + text + this->RESETCOLOR;
     }
+    line++;
 }
 
 

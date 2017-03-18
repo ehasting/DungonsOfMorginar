@@ -242,7 +242,8 @@ public:
     std::map<Direction::Directions, Item*> Blockers;
     std::vector<Item*> ItemList;
     RoomCoords Coords;
-    void ShowRoom(AsciiRenderEngine &render, int lineoffset);
+    void ShowRoom(AsciiRenderEngine &render, int &lineoffset);
+    void DrawRoom(AsciiRenderEngine &render, int &lineoffset);
     bool IsDirectionBlocked(Direction::Directions diretion);
     bool IsVisited;
 

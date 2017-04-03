@@ -49,6 +49,7 @@ public:
     void PrintDebug();
     std::vector<std::string> ScreenBuffer;
     void Print(std::string text, COLOR color, int &line, int lineoffset = 0);
+    void OverridePrint(std::string text, COLOR color, int lineoffset, int index);
     void Update();
     std::string ResolveColor(COLOR color);
 };

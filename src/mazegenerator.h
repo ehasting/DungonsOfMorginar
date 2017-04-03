@@ -26,6 +26,10 @@ SOFTWARE.
 #include <vector>
 #include "location.h"
 #include <random>
+#include "item.h"
+#include <vector>
+
+
 
 class MazeGenerator
 {
@@ -33,6 +37,7 @@ public:
     MazeGenerator();
     std::map<std::string, Location> TheMaze;
     void GenerateNeigbour(Location &source, Direction::Directions goingto, Location &neighbour);
+    std::vector<Item> Items;
 private:
     int RoomIdIndex;
     std::vector<int> RoomIDList;
@@ -45,7 +50,7 @@ private:
         std::string returnid = std::to_string(index) + "-" + std::to_string(this->RoomIdIndex) + "_" +Direction::to_string(fromdirection);
         return returnid;
     }
-
+    void WalkTheLabyrinth(Location *DestinationRoom, Location *SourceRoom, RoomCoords &Target);
 
 };
 

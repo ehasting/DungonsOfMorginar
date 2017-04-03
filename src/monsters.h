@@ -9,14 +9,14 @@ public:
     std::vector<Monster> TheMonsters;
 
     bool GenerateNextMonster(RoomCoords coords);
-    std::vector<Monster> GetMonsters(RoomCoords coords)
+    std::vector<Monster*> GetMonsters(RoomCoords coords)
     {
-        std::vector<Monster> rval;
-        for(auto n : this->TheMonsters)
+        std::vector<Monster*> rval;
+        for(int x = 0; x < this->TheMonsters.size(); x++)
         {
-            if (n.Coords == coords)
+            if (this->TheMonsters[x].Coords == coords)
             {
-                rval.push_back(n);
+                rval.push_back(&this->TheMonsters[x]);
             }
 
         }

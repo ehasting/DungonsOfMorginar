@@ -4,6 +4,7 @@
 #include "location.h"
 #include "renderengine.h"
 #include <string>
+#include "item.h"
 
 class Monster : public Character
 {
@@ -12,6 +13,7 @@ public:
     RoomCoords Coords;
     RenderEngine::COLOR Color;
     std::string LastMessage;
+    Item Loot;
     bool ShouldIMove();
     void MoveMosterRandom(std::vector<Location> Map);
     void SetMonsterLocation(RoomCoords loc)

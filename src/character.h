@@ -43,6 +43,7 @@ public:
     int Intelligence;
     int Moves;
     virtual std::string GetCharacterString();
+    bool IsDead();
 };
 
 #endif // CHARACTER_H

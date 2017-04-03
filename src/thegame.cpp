@@ -34,6 +34,7 @@ SOFTWARE.
 #include "action.h"
 #include "asciirenderengine.h"
 #include "monsters.h"
+#include "fightcalculator.h"
 
 TheGame::TheGame()
 {
@@ -42,7 +43,7 @@ TheGame::TheGame()
 }
 
 
-void TheGame::SetupCommands()
+void TheGame::SetupCommands(int &printcursor)
 {
     Action actionExit("exit");
     actionExit.ActionFunction = [&] {
@@ -86,7 +87,7 @@ void TheGame::SetupCommands()
                     if (ex.second->Name == this->prompt.GetCommandList().at(1))
                     {
                         deleteKey = ex.first;
-                        std::cout << "You used " << this->prompt.GetCommandList().at(1) << std::endl;
+                        //std::cout << "You used " << this->prompt.GetCommandList().at(1) << std::endl;
                         break;
                     }
                 }
@@ -111,6 +112,8 @@ void TheGame::SetupCommands()
 
     Action actionGo("go");
     actionGo.ActionFunction = [&] {
+        if (this->prompt.GetCommandList().size() == 1)
+            return;
         Direction::Directions input_direction = Direction::from_string(this->prompt.GetCommandList().at(1));
         if (this->loc.FindNewRoom(input_direction))
         {
@@ -125,6 +128,36 @@ void TheGame::SetupCommands()
         }
     };
     this->prompt.Actions.push_back(actionGo);
+
+    Action actionAttack("attack");
+    actionAttack.ActionFunction = [&] {
+        std::vector<Monster*> CurrentMonsters = this->mobs->GetMonsters(this->loc.CurrentRoom->Coords);
+        if (CurrentMonsters.size() ==  0)
+        {
+           this->render.Print("There are nothing to attack...", RenderEngine::COLOR::WHITE, printcursor, 0);
+        }
+        FightCalculator calc;
+        int monsterindextoattack = Tools::getInstance().Dice(0, CurrentMonsters.size()-1);
+        std::string attacktxt = calc.Crunch(this->hero, *CurrentMonsters.at(monsterindextoattack));
+        this->render.Print(attacktxt, CurrentMonsters.at(monsterindextoattack)->Color, printcursor, 2);
+        if (Tools::getInstance().Dice(1,20) > 10)
+        {
+            if (!CurrentMonsters.at(monsterindextoattack)->IsDead())
+            {
+                this->render.Print("A counter attack is launched", CurrentMonsters.at(monsterindextoattack)->Color, printcursor,0);
+                std::string counterattacktxt = calc.Crunch(*CurrentMonsters.at(monsterindextoattack), this->hero);
+                this->render.Print(counterattacktxt, CurrentMonsters.at(monsterindextoattack)->Color, printcursor, 2);
+            }
+        }
+        else
+        {
+            this->render.Print(CurrentMonsters.at(monsterindextoattack)->Name + " is without any defense...", CurrentMonsters.at(monsterindextoattack)->Color, printcursor,0);
+        }
+
+
+    };
+    this->prompt.Actions.push_back(actionAttack);
+
 }
 
 void TheGame::RecalculateScreen()
@@ -172,7 +205,7 @@ void TheGame::Run()
     */
 
 
-
+    int n = 0;
 
     bool IsMoreMonsters = true;
     for (auto n : this->maze.TheMaze)
@@ -185,12 +218,12 @@ void TheGame::Run()
     }
     this->loc.Init();
 
-    this->SetupCommands();
+    this->SetupCommands(n);
 
     render.ClearScreen();
     while(this->running)
     {
-        int n = 0;
+        n = 0;
         this->RecalculateScreen();
         this->hero.ShowCharacterLine(render, n);
         render.Print(std::string(render.GetLastChar()-1, '-'), RenderEngine::WHITE, n);
@@ -200,11 +233,11 @@ void TheGame::Run()
         n++; // Space
         this->hero.ShowInventory(render, n);
 
-        n = n+3;
-        for (Monster monstersinroom : this->mobs->GetMonsters(this->loc.CurrentRoom->Coords))
+        n++; // Space
+        for (Monster* monstersinroom : this->mobs->GetMonsters(this->loc.CurrentRoom->Coords))
         {
-            render.Print( monstersinroom.Name + " ("+ monstersinroom.LastMessage +") Moves: " + std::to_string(monstersinroom.Moves), monstersinroom.Color, n);
-            render.Print( monstersinroom.GetCharacterString(), monstersinroom.Color, n, 2);
+            //render.Print( monstersinroom->Name + " ("+ monstersinroom->LastMessage +") Moves: " + std::to_string(monstersinroom->Moves), monstersinroom->Color, n);
+            render.Print("* " + monstersinroom->GetCharacterString(), monstersinroom->Color, n, 0);
         }
 
 

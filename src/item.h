@@ -28,6 +28,7 @@ SOFTWARE.
 class Item
 {
 public:
+    Item() {}
     Item(int id, std::string name, std::string placement, std::string desc)
     {
         this->ID = id;

@@ -89,25 +89,60 @@ void AsciiRenderEngine::Print(std::string text, COLOR color, int &line, int line
         int cnt = 0;
         for (auto ch : text)
         {
-            if (((char)ch == ' ') && cnt > (this->TermWidth/4)*3 )
+            if (((char)ch == ' ') && cnt > (this->TermWidth*0.70f) )
             {
                 output.push_back((char)ch);
-                this->ScreenBuffer[line++] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
+                this->ScreenBuffer[line] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
                 output.clear();
                 cnt = 0;
+                line++;
             }
             else
                 output.push_back((char)ch);
             cnt++;
         }
-        this->ScreenBuffer[line++] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
+        if (output.length() > 0)
+        {
+            this->ScreenBuffer[line] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
+            line++;
+        }
     }
     else {
         this->ScreenBuffer[line] = this->ResolveColor(color) + std::string(lineoffset, ' ') + text + this->RESETCOLOR;
+        line++;
     }
-    line++;
 }
 
+void AsciiRenderEngine::OverridePrint(std::string text, COLOR color, int lineoffset, int index)
+{
+    std::string output;
+    if (text.length() > this->TermWidth)
+    {
+        int cnt = 0;
+        for (auto ch : text)
+        {
+            if (((char)ch == ' ') && cnt > (this->TermWidth*0.70f) )
+            {
+                output.push_back((char)ch);
+                this->ScreenBuffer[index] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
+                output.clear();
+                cnt = 0;
+                index++;
+            }
+            else
+                output.push_back((char)ch);
+            cnt++;
+        }
+        if (output.length() > 0)
+        {
+            this->ScreenBuffer[index] = this->ResolveColor(color) + std::string(lineoffset, ' ') + output + this->RESETCOLOR;
+            index++;
+        }
+    }
+    else {
+        this->ScreenBuffer[index] = this->ResolveColor(color) + std::string(lineoffset, ' ') + text + this->RESETCOLOR;
+    }
+}
 
 void AsciiRenderEngine::Update()
 {

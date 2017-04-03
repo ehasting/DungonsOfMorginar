@@ -60,7 +60,14 @@ void Character::GenerateCharacter()
 
 std::string Character::GetCharacterString()
 {
-    return "[" + this->Name + "] Health: " + std::to_string(this->CurrentHealth) + "/" + std::to_string(this->Health) +
-            " | Mana: " + std::to_string(this->CurrentMana) + "/"  + std::to_string(this->Mana) +
-            " | Str/Dex/Int: " + std::to_string(this->Strength) + "/" + std::to_string(this->Dexterety) + "/" + std::to_string(this->Intelligence) + "  Moves: " + std::to_string(this->Moves);
+    return "[" + this->Name + "] HP: " + std::to_string(this->CurrentHealth) + "/" + std::to_string(this->Health) +
+            " | Man: " + std::to_string(this->CurrentMana) + "/"  + std::to_string(this->Mana) +
+            " | Str/Dex/Int: " + std::to_string(this->Strength) + "/" + std::to_string(this->Dexterety) + "/" + std::to_string(this->Intelligence) + "  Mv: " + std::to_string(this->Moves);
+}
+
+bool Character::IsDead()
+{
+    if (this-CurrentHealth <= 0)
+        return true;
+    return false;
 }

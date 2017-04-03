@@ -33,8 +33,7 @@ set(HEADER_FILES
     src/asciirenderengine.cpp
     src/mazegenerator.cpp
     src/monster.cpp
-    src/monsters.cpp)
-
-
+    src/monsters.cpp
+    src/fightcalculator.cpp)
 
 add_executable(DungonsOfMorginar src/launcher.cpp ${HEADER_FILES})

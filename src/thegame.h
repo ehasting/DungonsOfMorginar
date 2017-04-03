@@ -41,7 +41,7 @@ private:
     Monsters *mobs;
 public:
     TheGame();
-    void SetupCommands();
+    void SetupCommands(int &printcursor);
     void Run();
 
 

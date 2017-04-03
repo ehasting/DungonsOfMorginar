@@ -23,11 +23,11 @@ void Hero::ShowCharacter(AsciiRenderEngine &render, int &lineoffset)
 
 void Hero::ShowInventory(AsciiRenderEngine &render, int &lineoffset)
 {
-    render.Print("Inventory:", RenderEngine::WHITE, lineoffset);
     lineoffset++;
+    std::string invline;
     for (auto inv : this->Inventory)
     {
-        render.Print(" * " + inv->Name + " - " + inv->Description, RenderEngine::BLUE, lineoffset);
-        lineoffset++;
+        invline = invline + "[" + inv->Name + " - " + inv->Description + "] ";
     }
+    render.Print("Inventory:" + invline, RenderEngine::BLUE, lineoffset);
 }

@@ -24,6 +24,7 @@ SOFTWARE.
 #include "location.h"
 #include <string>
 #include <iostream>
+#include <map>
 
 RoomCoords::RoomCoords(std::string SerializedRoomCoords)
 {
@@ -68,27 +69,14 @@ void Location::ShowRoom(AsciiRenderEngine &render, int &lineoffset)
     }
     render.Print("Exits:", RenderEngine::WHITE, lineoffset);
     this->DrawRoom(render, lineoffset);
-    for (auto ex : this->Linked)
-    {
-        std::string o = " - "  + Direction::to_string(ex.first) + " (" + ex.second->ID  + ")";
 
-        if (this->Blockers.count(ex.first) == 1)
-        {
-            render.Print(o + " *blocked (" + std::to_string(this->Blockers[ex.first]->ID) + ")", RenderEngine::RED, lineoffset);
-        }
-        else
-        {
-            render.Print(o, RenderEngine::GREEN, lineoffset);
-        }
-    }
-    lineoffset++;
 
 }
 
 void Location::DrawRoom(AsciiRenderEngine &render, int &lineoffset)
 {
     std::string room[5];
-    bool north, south, east, west = false;
+    bool north = false, south = false, east = false, west = false;
     if (this->Linked.count(Direction::Directions::NORTH) > 0)
         north = true;
     if (this->Linked.count(Direction::Directions::SOUTH) > 0)
@@ -98,14 +86,15 @@ void Location::DrawRoom(AsciiRenderEngine &render, int &lineoffset)
     if (this->Linked.count(Direction::Directions::WEST) > 0)
         west = true;
 
-    std::string door   = "--|  |--";
+    std::string updoor   = "__|  |__";
+    std::string dndoor   = "¨¨|  |¨¨";
     std::string nodoor = "--------";
-    std::string hero  = "      ";
-    std::string empty = "      ";
+    std::string hero  = "...@..";
+    std::string empty = "......";
     std::string monsters = " x    ";
 
     if (north)
-        room[0] = door;
+        room[0] = updoor;
     else
         room[0] = nodoor;
     if (east && west)
@@ -114,16 +103,16 @@ void Location::DrawRoom(AsciiRenderEngine &render, int &lineoffset)
         room[2] = " "+hero +" ";
         room[3] = "|"+empty+"|";
     }
-    else if (!east && west)
-    {
-        room[1] = "|"+empty+"|";
-        room[2] = "|"+hero+ " ";
-        room[3] = "|"+empty+"|";
-    }
     else if (!east && !west)
     {
         room[1] = "|"+empty+"|";
         room[2] = "|"+hero+ "|";
+        room[3] = "|"+empty+"|";
+    }
+    else if (!east && west)
+    {
+        room[1] = "|"+empty+"|";
+        room[2] = "|"+hero+ " ";
         room[3] = "|"+empty+"|";
     }
     else if (east && !west)
@@ -133,12 +122,37 @@ void Location::DrawRoom(AsciiRenderEngine &render, int &lineoffset)
         room[3] = "|"+empty+"|";
     }
     if (south)
-        room[4] = door;
+        room[4] = dndoor;
     else
         room[4] = nodoor;
-    for(std::string n : room)
+
+    int ncnt = 0;
+    std::vector<std::string> exits;
+
+        for (auto ex : this->Linked)
+        {
+            std::string o;
+             o = o + " - "  + Direction::to_string(ex.first) + " (" + ex.second->ID  + ")";
+
+            if (this->Blockers.count(ex.first) == 1)
+            {
+                o = o + " *blocked (" + std::to_string(this->Blockers[ex.first]->ID) + ")";
+            }
+            exits.push_back(o);
+        }
+
+    int maxlen = 5;
+    if (exits.size() > 5)
+        maxlen = exits.size();
+
+    for(int x = 0; x < maxlen; x++)
     {
-        render.Print(n, RenderEngine::YELLOW, lineoffset, 5);
+        std::string o = "";
+        if (x < 5)
+            o = room[x];
+        if (x < exits.size())
+            o = o + " " + exits.at(x);
+        render.Print(o, RenderEngine::YELLOW, lineoffset);
     }
 }
 

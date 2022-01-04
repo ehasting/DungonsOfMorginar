@@ -4,36 +4,14 @@ project (DungonsOfMorginar)
 #set (CMAKE_C_COMPILER "clang")
 message(STATUS "The compiler ${CMAKE_CXX_COMPILER_ID}")
 
-macro(use_cxx11)
-  if (CMAKE_VERSION VERSION_LESS "3.1")
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-      set (CMAKE_CXX_FLAGS "--std=gnu++11 ${CMAKE_CXX_FLAGS}")
-    elif (CMAKE_CXX_COMPILER_ID STREQUAL "CLANG")
-      set (CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-    endif ()
-  else ()
-    set (CMAKE_CXX_STANDARD 11)
-  endif ()
-endmacro(use_cxx11)
-
-use_cxx11()
-
+set (CMAKE_CXX_STANDARD 17)
+find_package( Threads )
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 set(HEADER_FILES
-    src/tools.cpp
-    src/character.cpp
-    src/hero.cpp
-    src/location.cpp
-    src/locations.cpp
-    src/action.cpp
-    src/promptparser.cpp
-    src/item.cpp
-    src/thegame.cpp
-    src/renderengine.cpp
-    src/asciirenderengine.cpp
-    src/mazegenerator.cpp
-    src/monster.cpp
-    src/monsters.cpp
-    src/fightcalculator.cpp)
+        src/tools.hpp src/tools.cpp
+        src/gameloop.hpp src/gameloop.cpp
+        src/models/character.hpp src/models/character.cpp
+)
 
-add_executable(DungonsOfMorginar src/launcher.cpp ${HEADER_FILES})
+add_executable(DungonsOfMorginarV2 src/main.cpp ${HEADER_FILES})
+target_link_libraries( DungonsOfMorginarV2 ${CMAKE_THREAD_LIBS_INIT} )

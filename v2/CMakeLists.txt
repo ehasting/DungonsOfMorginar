@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (DungonsOfMorginar)
-set (CMAKE_CXX_COMPILER "clang++")
-set (CMAKE_C_COMPILER "clang")
+#set (CMAKE_CXX_COMPILER "clang++")
+#set (CMAKE_C_COMPILER "clang")
 message(STATUS "The compiler ${CMAKE_CXX_COMPILER_ID}")
 
 macro(use_cxx11)

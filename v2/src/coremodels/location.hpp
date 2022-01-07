@@ -4,7 +4,7 @@
 
 #ifndef DUNGONSOFMORGINAR_LOCATION_HPP
 #define DUNGONSOFMORGINAR_LOCATION_HPP
-#include <fmt/core.h>
+#include "fmt/core.h"
 #include <iostream>
 
 class Location

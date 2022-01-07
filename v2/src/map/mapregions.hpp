@@ -1,0 +1,15 @@
+//
+// Created by eh on 07.01.2022.
+//
+
+#ifndef DUNGONSOFMORGINAR_MAPREGIONS_HPP
+#define DUNGONSOFMORGINAR_MAPREGIONS_HPP
+
+
+class mapregions
+{
+
+};
+
+
+#endif //DUNGONSOFMORGINAR_MAPREGIONS_HPP

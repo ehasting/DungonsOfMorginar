@@ -4,25 +4,29 @@
 
 #ifndef DUNGONSOFMORGINAR_MOUSE_HPP
 #define DUNGONSOFMORGINAR_MOUSE_HPP
-#include "dynamicobject.hpp"
-
-class Mouse : public DynamicObject
+#include "coremodels/dynamicobject.hpp"
+namespace DofM
 {
-public:
-    inline static const std::string TypeName = "mouse";
-    Mouse() : DynamicObject(TypeName)
+    class Mouse : public DynamicObject
     {
-    }
-    virtual bool Update(long tick)
-    {
-        std::cout << "Update from " << this->GetTypeName() << std::endl;
-        return true;
-    };
-    std::string Moustrubate()
-    {
-        return "I am MousTrubating";
-    }
-};
+    public:
+        inline static const std::string TypeName = "mouse";
 
+        Mouse() : DynamicObject(TypeName)
+        {
+        }
+
+        virtual bool Update(long tick)
+        {
+            //std::cout << "Update from " << this->GetTypeName() << std::endl;
+            return true;
+        };
+
+        std::string Moustrubate()
+        {
+            return "I am MousTrubating";
+        }
+    };
+}
 
 #endif //DUNGONSOFMORGINAR_MOUSE_HPP

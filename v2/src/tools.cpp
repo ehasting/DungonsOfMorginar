@@ -6,8 +6,10 @@
 #include <locale>
 #include <vector>
 #include <random>
-
-Tools::Tools()
+namespace DofM
 {
-    this->rng.seed(std::random_device()());
+    Tools::Tools()
+    {
+        this->rng.seed(std::random_device()());
+    }
 }

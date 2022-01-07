@@ -10,13 +10,14 @@ add_subdirectory(fmt-8.1.0 EXCLUDE_FROM_ALL)
 include_directories ("${PROJECT_SOURCE_DIR}/src")
 set(HEADER_FILES
         src/tools.hpp src/tools.cpp
-        src/models/location.cpp src/models/location.hpp
-        src/models/dynamicobject.hpp src/models/dynamicobject.cpp
-        src/models/character.hpp src/models/character.cpp
-        src/models/mouse.hpp src/models/mouse.cpp
-        src/models/locatedobject.cpp src/models/locatedobject.hpp
+        src/coremodels/location.cpp src/coremodels/location.hpp
+        src/coremodels/dynamicobject.hpp src/coremodels/dynamicobject.cpp
+        src/objects/character.hpp src/objects/character.cpp
+        src/objects/mouse.hpp src/objects/mouse.cpp
+        src/coremodels/locatedobject.cpp src/coremodels/locatedobject.hpp
         src/gameloop.hpp src/gameloop.cpp
-        )
+        src/map/tile.cpp src/map/tile.hpp
+        src/map/mapregions.cpp src/map/mapregions.hpp)
 
 
 

@@ -5,11 +5,12 @@
 #ifndef DUNGONSOFMORGINAR_ALLMAP_TEST_H
 #define DUNGONSOFMORGINAR_ALLMAP_TEST_H
 
-
-class allmap_test
+namespace DofM
 {
+    class allmap_test
+    {
 
-};
+    };
 
-
+}
 #endif //DUNGONSOFMORGINAR_ALLMAP_TEST_H

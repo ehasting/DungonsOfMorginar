@@ -14,8 +14,8 @@ auto run() -> void
 int main (int argc, char *argv[])
 {
     run();
-    Tools bungo;
-    GameLoop loop;
+    DofM::Tools bungo;
+    DofM::GameLoop loop;
     loop.Run();
 }
 /*

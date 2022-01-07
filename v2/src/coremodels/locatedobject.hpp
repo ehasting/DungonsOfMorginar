@@ -6,19 +6,20 @@
 #define DUNGONSOFMORGINAR_LOCATEDOBJECT_HPP
 #include "location.hpp"
 #include "dynamicobject.hpp"
-
-class LocatedObject : public DynamicObject
+namespace DofM
 {
-protected:
-    LocatedObject(std::string tname, Location &location)
-        : DynamicObject(tname)
+    class LocatedObject : public DynamicObject
     {
-        this->ObjectLocation = std::make_shared<Location>(location);
-    }
+    protected:
+        LocatedObject(std::string tname, Location &location)
+                : DynamicObject(tname)
+        {
+            this->ObjectLocation = std::make_shared<Location>(location);
+        }
 
-public:
-    std::shared_ptr<Location> ObjectLocation;
-};
-
+    public:
+        std::shared_ptr<Location> ObjectLocation;
+    };
+}
 
 #endif //DUNGONSOFMORGINAR_LOCATEDOBJECT_HPP

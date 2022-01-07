@@ -10,23 +10,27 @@
 #include <vector>
 #include <stdexcept>
 
-#include "models/dynamicobject.hpp"
-#include "models/character.hpp"
-#include "models/mouse.hpp"
-
-class GameLoop
+#include "coremodels/dynamicobject.hpp"
+#include "objects/character.hpp"
+#include "objects/mouse.hpp"
+namespace DofM
 {
-private:
-    std::vector<std::shared_ptr<DynamicObject> > DynamicObjects;
-    std::shared_ptr<std::thread> EventLoop;
+    class GameLoop
+    {
+    private:
+        std::vector<std::shared_ptr<DynamicObject> > DynamicObjects;
+        std::shared_ptr<std::thread> EventLoop;
 
-public:
+    public:
 //std::thread thObj(<CALLBACK>);
-    GameLoop();
-    ~GameLoop();
-    void Run();
-    bool IsRunning = true;
-};
+        GameLoop();
 
+        ~GameLoop();
+
+        void Run();
+
+        bool IsRunning = true;
+    };
+}
 
 #endif //DUNGONSOFMORGINAR_GAMELOOP_H

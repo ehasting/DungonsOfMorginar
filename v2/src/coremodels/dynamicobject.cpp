@@ -3,15 +3,18 @@
 //
 
 #include "dynamicobject.hpp"
-DynamicObject::DynamicObject()
+namespace DofM
 {
-    this->PrivateTypeName = TypeName;
-}
+    DynamicObject::DynamicObject()
+    {
+        this->PrivateTypeName = TypeName;
+    }
 
-DynamicObject::DynamicObject(std::string tname)
-{
-    this->PrivateTypeName = tname;
-}
+    DynamicObject::DynamicObject(std::string tname)
+    {
+        this->PrivateTypeName = tname;
+    }
 
-DynamicObject::~DynamicObject()
-{}
+    DynamicObject::~DynamicObject()
+    {}
+}

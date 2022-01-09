@@ -26,7 +26,7 @@ namespace DofM
 
         ~Location()
         {
-            std::cout << fmt::format("~Location out of scope ({})", this->GetMatchLocation()) << std::endl;
+            //std::cout << fmt::format("~Location out of scope ({})", this->GetMatchLocation()) << std::endl;
         }
 
         bool operator==(const Location &a) const

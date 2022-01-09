@@ -7,19 +7,36 @@
 #include <thread>
 #include <memory>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <stdexcept>
+#include <future>
+#include <string_view>
 
+#include <mutex>
+
+#include "tools.hpp"
+#include "core/nonblockingterminal.hpp"
 #include "coremodels/dynamicobject.hpp"
 #include "objects/character.hpp"
 #include "objects/mouse.hpp"
+#include "core/keycodes.hpp"
+
 namespace DofM
 {
     class GameLoop
     {
     private:
         std::vector<std::shared_ptr<DynamicObject> > DynamicObjects;
-        std::shared_ptr<std::thread> EventLoop;
+        std::shared_ptr<std::thread> MainEventThread;
+        std::shared_ptr<std::thread> KeyboardEventThread;
+
+
+        void MainEventWorker();
+        void CheckForKeyboardEventWorker();
+        DofM::Tools ToolsObject;
+        DofM::NonBlockingTerminal Term;
+        std::stringstream TextCommandBuffer;
 
     public:
 //std::thread thObj(<CALLBACK>);

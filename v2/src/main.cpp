@@ -13,7 +13,6 @@ auto run() -> void
 
 int main (int argc, char *argv[])
 {
-    run();
     DofM::Tools bungo;
     DofM::GameLoop loop;
     loop.Run();

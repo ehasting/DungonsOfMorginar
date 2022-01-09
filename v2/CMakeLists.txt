@@ -17,7 +17,7 @@ set(HEADER_FILES
         src/coremodels/locatedobject.cpp src/coremodels/locatedobject.hpp
         src/gameloop.hpp src/gameloop.cpp
         src/map/tile.cpp src/map/tile.hpp
-        src/map/mapregions.cpp src/map/mapregions.hpp src/core/nonblockingterminal.cpp src/core/nonblockingterminal.hpp src/core/keycodes.hpp src/core/screenpos.cpp src/core/screenpos.hpp)
+        src/map/mapregions.cpp src/map/mapregions.hpp src/core/nonblockingterminal.cpp src/core/nonblockingterminal.hpp src/core/keycodes.hpp src/core/screenpos.cpp src/core/screenpos.hpp src/iohandler.cpp src/iohandler.hpp)
 
 
 

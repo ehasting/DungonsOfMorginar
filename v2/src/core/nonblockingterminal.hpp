@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cmath>
+#include <queue>
 #include "screenpos.hpp"
 /*
  * Usage:
@@ -79,13 +80,12 @@ namespace DofM
         };
     private:
         bool IsInNonBlockingMode = false;
-        char InputBuffer[32];
-        int InputBufferCursor = 0;
+        std::queue<char> InputQueue;
         struct termios OriginalTerminalSettings;
         std::mutex IOMutex;
         std::mutex DrawMutex;
         char ReadCharBuffer[2];
-
+        void ProcessKeyPressEventQueue();
         std::string GetRenderingTableLookupKey(ScreenPos pos)
         {
             return std::to_string(pos.Col()) + "_" + std::to_string(pos.Row());
@@ -167,7 +167,6 @@ namespace DofM
         unsigned int RedrawCounter = 0;
     public:
         NonBlockingTerminal();
-
         ~NonBlockingTerminal();
 
         unsigned short int RowMax = 0;
@@ -175,14 +174,14 @@ namespace DofM
 
         void SetupNonBlockingTerminal();
 
-        std::string_view GetAndClearNonBlockingIOBuffer();
+        virtual void ProcessKeyPressEventCallback(char &key) = 0;
 
         void ScanKeyboardInput();
 
         void Redraw();
 
-        void WriteToBuffer(std::string text, ScreenPos pos, std::vector<TermRendringAttrs> &attrs );
-        void WriteToBuffer(std::string text, ScreenPos pos );
+        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, std::vector<TermRendringAttrs> &attrs );
+        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength);
         void CheckIfOnScreen(ScreenPos pos, unsigned int textlength)
         {
             if (pos.Col() > this->ColMax)
@@ -212,7 +211,7 @@ namespace DofM
             for (int y = 1; y < this->RowMax+1; y++)
             {
                 //this->WriteToBuffer(std::string(this->ColMax, '*'), ScreenPos(0, y));
-                this->WriteToBuffer("*", ScreenPos(1, y));
+                this->WriteToBuffer("*", ScreenPos(1, y), 1);
             }
         }
         constexpr static std::string_view EmptyBuffer{};

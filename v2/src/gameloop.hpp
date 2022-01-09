@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <future>
 #include <string_view>
-
+#include "fmt/core.h"
 #include <mutex>
 
 #include "tools.hpp"
@@ -21,9 +21,11 @@
 #include "objects/character.hpp"
 #include "objects/mouse.hpp"
 #include "core/keycodes.hpp"
+#include "iohandler.hpp"
 
 namespace DofM
 {
+
     class GameLoop
     {
     private:
@@ -35,7 +37,7 @@ namespace DofM
         void MainEventWorker();
         void CheckForKeyboardEventWorker();
         DofM::Tools ToolsObject;
-        DofM::NonBlockingTerminal Term;
+        IOHandler Term;
         std::stringstream TextCommandBuffer;
 
     public:

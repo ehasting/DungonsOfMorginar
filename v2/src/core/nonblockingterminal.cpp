@@ -32,12 +32,12 @@ namespace DofM
         //std::cout << std::endl;
     }
 
-    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos)
+    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength)
     {
         std::vector<TermRendringAttrs> emptyattr;
-        this->WriteToBuffer(text, pos, emptyattr);
+        this->WriteToBuffer(text, pos, maxtextlength, emptyattr);
     }
-    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, std::vector<TermRendringAttrs> &attrs)
+    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, std::vector<TermRendringAttrs> &attrs)
     {
         this->DrawMutex.lock();
         bool hasrendring = false;
@@ -62,7 +62,7 @@ namespace DofM
         this->CheckIfOnScreen(pos, text.length());
 
         unsigned int bufferstartindex = this->GetBufferPosition(pos);
-
+        unsigned int cleanbufferstartindex = bufferstartindex;
 
         if (hasrendring)
         {
@@ -71,6 +71,10 @@ namespace DofM
             this->RenderingTable[endkey] = "\033[0m";
         }
 
+        for (unsigned int x = cleanbufferstartindex; x < cleanbufferstartindex+maxtextlength; x++)
+        {
+            this->ScreenBuffer[x] = ' ';
+        }
         for (auto c : text)
         {
             this->ScreenBuffer[bufferstartindex] = c;
@@ -121,7 +125,7 @@ namespace DofM
         {
 
             this->ResizeScreenBuffer();
-            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(4,10));
+            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(4,10), 25);
             this->Redraw();
         }
 
@@ -190,29 +194,35 @@ namespace DofM
     }
     void NonBlockingTerminal::ScanKeyboardInput()
     {
-        ReadCharBuffer[0] = EOF;
-        ReadCharBuffer[1] = EOF;
-        int l = read(STDIN_FILENO, this->ReadCharBuffer, 1);
-        if (l > 0)
+        while (true)
         {
-            this->IOMutex.lock();
-            InputBuffer[InputBufferCursor] = this->ReadCharBuffer[0];
-            this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])), ScreenPos(4, 7 ));
-            InputBufferCursor++;
-            this->IOMutex.unlock();
+            ReadCharBuffer[0] = EOF;
+            ReadCharBuffer[1] = EOF;
+            int l = read(STDIN_FILENO, this->ReadCharBuffer, 1);
+            if (l > 0)
+            {
+                this->IOMutex.lock();
+                InputQueue.push(this->ReadCharBuffer[0]);
+                this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])),
+                                    ScreenPos(4, 7),13);
+                this->IOMutex.unlock();
+                // if we found data, do another read to check if buffer still has content
+                continue;
+            }
+            break;
         }
+        this->ProcessKeyPressEventQueue();
     }
 
-    std::string_view NonBlockingTerminal::GetAndClearNonBlockingIOBuffer()
+    void NonBlockingTerminal::ProcessKeyPressEventQueue()
     {
-        if (this->InputBufferCursor > 0)
+        if (!this->InputQueue.empty())
         {
             this->IOMutex.lock();
-            std::string_view currentbuffer(this->InputBuffer, this->InputBufferCursor);
-            this->InputBufferCursor = 0;
+            auto n = this->InputQueue.front();
+            this->InputQueue.pop();
+            this->ProcessKeyPressEventCallback(n);
             this->IOMutex.unlock();
-            return currentbuffer;
         }
-        return std::string_view();
     }
 }

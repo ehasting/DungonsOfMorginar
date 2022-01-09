@@ -33,6 +33,7 @@ namespace DofM
     {
         //std::cout << "In buffer: " << this->TextCommandBuffer.str() << std::endl;
         this->DynamicObjects.clear();
+        std::cout << this->Term.KeyLog <<std::endl;
     }
 
 
@@ -63,6 +64,7 @@ namespace DofM
         //std::cout << "Stopping MainEventWorker" << std::endl;
     }
 
+
     void GameLoop::CheckForKeyboardEventWorker()
     {
         fd_set read_fds;
@@ -74,31 +76,7 @@ namespace DofM
         while (this->IsRunning)
         {
             Term.ScanKeyboardInput();
-            if ((iter % 50) == 0)
-            {
-                auto inputbuffer = Term.GetAndClearNonBlockingIOBuffer();
-                if (inputbuffer != NonBlockingTerminal::EmptyBuffer)
-                {
-                    if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_LEFT))
-                    {
-                        // std::cout <<  " ! LEFT ! " << std::endl;
-                    } else if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_UP))
-                    {
-                        // std::cout <<  " ! UP ! " << std::endl;
-                    } else if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_RIGHT))
-                    {
-                        // std::cout <<  " ! RIGHT ! " << std::endl;
-                    } else if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_DOWN))
-                    {
-                        // std::cout <<  " ! DOWN ! " << std::endl;
-                    } else
-                    {
-                        this->TextCommandBuffer << inputbuffer;
-                    }
-                    this->Term.WriteToBuffer(fmt::format("[BUFFER]: {}", inputbuffer),
-                                             ScreenPos(4, 5));
-                }
-            }
+
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
             iter++;
         }

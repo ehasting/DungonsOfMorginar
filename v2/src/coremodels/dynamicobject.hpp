@@ -30,12 +30,10 @@ namespace DofM
         }
 
         DynamicObject(std::string tname);
-
         virtual ~DynamicObject();
-
         virtual bool Update(long tick) = 0;
-
-        std::string_view GetTypeName() const
+        virtual const std::string GetDescriptionLine() = 0;
+        const std::string GetTypeName() const
         {
             return this->PrivateTypeName;
         }

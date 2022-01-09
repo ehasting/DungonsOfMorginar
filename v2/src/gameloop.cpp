@@ -17,8 +17,8 @@ namespace DofM
         Term.SetupNonBlockingTerminal();
 
 
-        std::shared_ptr<Character> n = std::make_shared<Character>(Location("home", 1, 2, 3));
-        std::shared_ptr<Mouse> m = std::make_shared<Mouse>();
+        std::shared_ptr<Character> n = std::make_shared<Character>("Hero 2000", Location("character", 1, 1, 1));
+        std::shared_ptr<Mouse> m = std::make_shared<Mouse>("Arnold");
 
         //auto l = n->GetDynamicObject();
         this->DynamicObjects.push_back(n);
@@ -43,7 +43,7 @@ namespace DofM
         //std::cout << "Starting MainEventWorker" << std::endl;
         while (this->IsRunning)
         {
-
+            int rowoffset = 12;
             // Update all DynamicObjects
             for (auto n: this->DynamicObjects)
             {
@@ -55,11 +55,13 @@ namespace DofM
                     //std::cout << n->GetRealObject<Mouse>()->Moustrubate() << std::endl;
                 }
                 n->Update(0);
+                Term.WriteToBuffer(std::to_string(rowoffset) + "::" + n->GetDescriptionLine(), ScreenPos(6, rowoffset), Term.ColMax - 10);
+                rowoffset++;
             }
-            //
-            Term.Redraw();
-            std::this_thread::sleep_for(std::chrono::milliseconds(2));
             Term.FillScreen();
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
         }
         //std::cout << "Stopping MainEventWorker" << std::endl;
     }
@@ -78,6 +80,7 @@ namespace DofM
             Term.ScanKeyboardInput();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            Term.Redraw();
             iter++;
         }
       //  std::cout << "Stopping CheckForKeyboardEventWorker" << std::endl;

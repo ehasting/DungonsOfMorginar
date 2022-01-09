@@ -39,6 +39,8 @@ namespace DofM
     }
     void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, std::vector<TermRendringAttrs> &attrs)
     {
+        if (!this->IsReady)
+            return;
         this->DrawMutex.lock();
         bool hasrendring = false;
         std::string renderingbuffer;
@@ -126,6 +128,7 @@ namespace DofM
 
             this->ResizeScreenBuffer();
             this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(4,10), 25);
+            this->ClearScreen();
             this->Redraw();
         }
 
@@ -147,10 +150,13 @@ namespace DofM
         this->ReadTerminalSize();
         const std::string hidecursor("\033[?25l");
         std::cout << hidecursor;
+        IsReady = true;
     }
 
     void NonBlockingTerminal::Redraw()
     {
+        if (!this->IsReady)
+            return;
         if ((RedrawCounter % 10) == 0)
         {
             this->ReadTerminalSize();

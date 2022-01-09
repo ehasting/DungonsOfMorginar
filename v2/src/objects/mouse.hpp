@@ -5,26 +5,34 @@
 #ifndef DUNGONSOFMORGINAR_MOUSE_HPP
 #define DUNGONSOFMORGINAR_MOUSE_HPP
 #include "coremodels/dynamicobject.hpp"
+#include "coremodels/livingobject.hpp"
+#include "coremodels/location.hpp"
+#include "fmt/core.h"
+#include <string>
+#include <memory>
+#include <iostream>
+
 namespace DofM
 {
-    class Mouse : public DynamicObject
+    class Mouse : public LivingObject
     {
     public:
         inline static const std::string TypeName = "mouse";
 
-        Mouse() : DynamicObject(TypeName)
+        Mouse(std::string name)
+            : LivingObject(name, TypeName, Location("mouse", 1, 1, 1))
         {
         }
 
         virtual bool Update(long tick)
         {
-            //std::cout << "Update from " << this->GetTypeName() << std::endl;
+            Stats.Stamina.Current--;
             return true;
         };
 
-        std::string Moustrubate()
+        const std::string GetDescriptionLine()
         {
-            return "I am MousTrubating";
+            return fmt::format("[{}] {} is having {} STAMINA and {} HP left", this->TypeName, UniqueName, Stats.Stamina.Current, Stats.Health.Current);
         }
     };
 }

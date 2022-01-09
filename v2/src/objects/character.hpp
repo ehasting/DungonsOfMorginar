@@ -5,14 +5,17 @@
 #ifndef DUNGONSOFMORGINAR_CHARACTER_H
 #define DUNGONSOFMORGINAR_CHARACTER_H
 #include "coremodels/locatedobject.hpp"
+#include "coremodels/livingobject.hpp"
+#include "coremodels/location.hpp"
 namespace DofM
 {
-    class Character : public LocatedObject
+    class Character : public LivingObject
     {
     public:
         inline static const std::string TypeName = "character";
 
-        Character(Location loc) : LocatedObject(TypeName, loc)
+        Character(std::string name, Location loc)
+            : LivingObject(name, TypeName, loc)
         {
         }
 
@@ -20,12 +23,13 @@ namespace DofM
         {
             //std::cout << "Update from " << this->GetTypeName() << std::endl;
             //std::cout << fmt::format("Location: {}", this->ObjectLocation->GetMatchLocation()) << std::endl;
+            Stats.Stamina.Current--;
             return true;
         };
 
-        std::string Mastrubate()
+        const std::string GetDescriptionLine()
         {
-            return "I am mastrubating";
+            return fmt::format("[{}] {} is having {} STAMINA and {} HP left",this->TypeName, UniqueName, Stats.Stamina.Current, Stats.Health.Current);
         }
     };
 }

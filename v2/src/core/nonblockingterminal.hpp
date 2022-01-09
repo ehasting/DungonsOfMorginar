@@ -79,6 +79,7 @@ namespace DofM
             FG_WHITE_BR = 97
         };
     private:
+        bool IsReady = false;
         bool IsInNonBlockingMode = false;
         std::queue<char> InputQueue;
         struct termios OriginalTerminalSettings;
@@ -211,7 +212,7 @@ namespace DofM
             for (int y = 1; y < this->RowMax+1; y++)
             {
                 //this->WriteToBuffer(std::string(this->ColMax, '*'), ScreenPos(0, y));
-                this->WriteToBuffer("*", ScreenPos(1, y), 1);
+                this->WriteToBuffer(std::to_string(y), ScreenPos(1, y), 2);
             }
         }
         constexpr static std::string_view EmptyBuffer{};

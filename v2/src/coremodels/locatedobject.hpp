@@ -11,13 +11,14 @@ namespace DofM
     class LocatedObject : public DynamicObject
     {
     protected:
-        LocatedObject(std::string tname, Location &location)
+        LocatedObject(std::string tname, Location location)
                 : DynamicObject(tname)
         {
             this->ObjectLocation = std::make_shared<Location>(location);
         }
 
     public:
+        virtual const std::string GetDescriptionLine() = 0;
         std::shared_ptr<Location> ObjectLocation;
     };
 }

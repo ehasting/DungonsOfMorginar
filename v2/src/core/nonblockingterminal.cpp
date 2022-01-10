@@ -103,9 +103,10 @@ namespace DofM
         if (w.ws_row == 0 && w.ws_col == 0)
         {
             // we default if console reports bad dim (i.e. debug console etc)
-            this->RowMax = 42;
-            this->ColMax = 131;
-            ischanged = true;
+            //this->RowMax = 42;
+            //this->ColMax = 131;
+            //ischanged = true;
+            throw std::invalid_argument("This is not a compatible terminal, can't work with this.");
         }
         else
         {
@@ -127,9 +128,9 @@ namespace DofM
         {
 
             this->ResizeScreenBuffer();
-            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(4,10), 25);
+            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(5,1), 25);
             this->ClearScreen();
-            this->Redraw();
+            //this->Redraw();
         }
 
     }
@@ -163,7 +164,8 @@ namespace DofM
         }
         this->DrawMutex.lock();
         std::string outbuffer;
-        //std::cout << this->GotoXY(ScreenPos(0,0));
+
+        //std::cout << this->GotoXY(ScreenPos(1,1));
         unsigned int row = 1;
         unsigned int linecursor = 0;
         unsigned int buffercursor = 0;
@@ -179,9 +181,10 @@ namespace DofM
                 auto previousline = GetLiveScreenBufferLine(buffercursor);
                 if (previousline != outbuffer)
                 {
-                    std::cout << this->GotoXY(ScreenPos(1, row))  << outbuffer;
+                    //std::cout << this->GotoXY(ScreenPos(1, row))  << outbuffer;
 
                 }
+                std::cout << this->GotoXY(ScreenPos(1, row))  << outbuffer;
                 UpdateLiveScreenBufferLine(buffercursor, outbuffer);
                 outbuffer.clear();
                 linecursor = 0;
@@ -209,8 +212,8 @@ namespace DofM
             {
                 this->IOMutex.lock();
                 InputQueue.push(this->ReadCharBuffer[0]);
-                this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])),
-                                    ScreenPos(4, 7),13);
+                //this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])),
+                //                    ScreenPos(4, 7),13);
                 this->IOMutex.unlock();
                 // if we found data, do another read to check if buffer still has content
                 continue;

@@ -89,7 +89,7 @@ namespace DofM
     std::string NonBlockingTerminal::GotoXY(ScreenPos pos)
     {
         this->CheckIfOnScreen(pos, 0);
-        return fmt::format("\033[{};{}H", pos.Row()+1, pos.Col()+1 );
+        return fmt::format("\033[{};{}H", pos.Row(), pos.Col());
     }
     void NonBlockingTerminal::ReadTerminalSize()
     {

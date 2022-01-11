@@ -58,9 +58,10 @@ namespace DofM
                                    ScreenPos(6, rowoffset), Term.ColMax - 10);
                 rowoffset++;
             }
+            Term.WriteToBuffer(Term.KeyLog, ScreenPos(7, rowoffset+1), 32);
             Term.FillScreen();
             Term.Redraw();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
 
@@ -109,7 +110,7 @@ namespace DofM
         {
             Term.ScanKeyboardInput();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
             iter++;
         }

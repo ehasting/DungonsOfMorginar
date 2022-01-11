@@ -6,7 +6,7 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <algorithm>
-
+#include <thread>
 namespace DofM
 {
     NonBlockingTerminal::NonBlockingTerminal()
@@ -179,12 +179,12 @@ namespace DofM
             if (linecursor >= this->ColMax)
             {
                 auto previousline = GetLiveScreenBufferLine(buffercursor);
+                // Only draw if line has changed since last drawing
+                // Partly "redraw"
                 if (previousline != outbuffer)
                 {
-                    //std::cout << this->GotoXY(ScreenPos(1, row))  << outbuffer;
-
+                    std::cout << this->GotoXY(ScreenPos(1, row))  << outbuffer;
                 }
-                std::cout << this->GotoXY(ScreenPos(1, row))  << outbuffer;
                 UpdateLiveScreenBufferLine(buffercursor, outbuffer);
                 outbuffer.clear();
                 linecursor = 0;
@@ -203,8 +203,6 @@ namespace DofM
     }
     void NonBlockingTerminal::ScanKeyboardInput()
     {
-        while (true)
-        {
             ReadCharBuffer[0] = EOF;
             ReadCharBuffer[1] = EOF;
             int l = read(STDIN_FILENO, this->ReadCharBuffer, 1);
@@ -212,25 +210,32 @@ namespace DofM
             {
                 this->IOMutex.lock();
                 InputQueue.push(this->ReadCharBuffer[0]);
-                //this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])),
-                //                    ScreenPos(4, 7),13);
+                this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])),
+                                    ScreenPos(4, 7),13);
                 this->IOMutex.unlock();
-                // if we found data, do another read to check if buffer still has content
-                continue;
+                this->ScanKeyboardInput();
             }
-            break;
-        }
-        this->ProcessKeyPressEventQueue();
+            else
+                // if we found data, do another read to check if buffer still has content
+                this->ProcessKeyPressEventQueue();
+
     }
 
     void NonBlockingTerminal::ProcessKeyPressEventQueue()
     {
         if (!this->InputQueue.empty())
         {
+            std::vector<char> sequence;
             this->IOMutex.lock();
+            while (!this->InputQueue.empty())
+            {
+            this->WriteToBuffer(fmt::format("InputQueue Size: {} ({})", this->InputQueue.size(), this->InputQueue.front()), ScreenPos(15,15), 28);
             auto n = this->InputQueue.front();
+            sequence.push_back(n);
             this->InputQueue.pop();
-            this->ProcessKeyPressEventCallback(n);
+
+            }
+            this->ProcessKeyPressEventCallback(sequence);
             this->IOMutex.unlock();
         }
     }

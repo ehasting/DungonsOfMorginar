@@ -7,78 +7,42 @@
 
 namespace DofM
 {
-    IOHandler::ProcessOutcomes IOHandler::ProcessIfEscapeSequence(char &key)
+    void IOHandler::ProcessKeyPressEventCallback(std::vector<char> &keysequence)
     {
-        if (!IsInKeyPressSequence)
+        std::string out;
+        for (auto n : keysequence)
         {
-            if ((int) key == 27)
-            {
-                IsInKeyPressSequence = true;
-                return IOHandler::ProcessOutcomes::ESC_START;
-            }
+            out += std::to_string((int)n);
         }
-        else
-        {
-            if (!IsExpectingSequenceIdentifier && (int) key == 91)
-            {
-                IsExpectingSequenceIdentifier = true;
-                return IOHandler::ProcessOutcomes::ESC_NEXT;
-            }
-        }
-        if (IsInKeyPressSequence && IsExpectingSequenceIdentifier)
-        {
-            // Reset key sequence state
-            IsExpectingSequenceIdentifier = false;
-            IsInKeyPressSequence = false;
-            return IOHandler::ProcessOutcomes::ESC_KEYCODE;
-        }
-        return IOHandler::ProcessOutcomes::REGULAR_KEY;
-    }
-    void IOHandler::ProcessKeyPressEventCallback(char &key)
-    {
-        switch (ProcessIfEscapeSequence(key))
-        {
-            case ESC_KEYCODE:
-                switch (KeyCodes::EvaluateEscapedKey(key))
+        this->WriteToBuffer(fmt::format("[QUEUE]: {}", out),
+                            ScreenPos(24, 5), 16);
+                switch (KeyCodes::MatchKey(keysequence))
                 {
-                    case KeyCodes::EscapedKeys::UP:
-                        this->WriteToBuffer(fmt::format("[BUFFER]: UP", key),
+                    case KeyCodes::KeyPress::UP:
+                        this->WriteToBuffer(fmt::format("[BUFFER]: UP"),
                                             ScreenPos(4, 5), 16);
                         break;
-                    case KeyCodes::EscapedKeys::DOWN:
-                        this->WriteToBuffer(fmt::format("[BUFFER]: DOWN", key),
+                    case KeyCodes::KeyPress::DOWN:
+                        this->WriteToBuffer(fmt::format("[BUFFER]: DOWN"),
                                             ScreenPos(4, 5), 16);
+                        break;
+                    case KeyCodes::KeyPress::ESC:
+                        this->WriteToBuffer(fmt::format("[BUFFER]: ESC"),
+                                            ScreenPos(4, 5), 16);
+                        break;
+                    case KeyCodes::KeyPress::F5:
+                        this->WriteToBuffer(fmt::format("[BUFFER]: F5"),
+                                            ScreenPos(4, 5), 16);
+                        break;
+                    case KeyCodes::KeyPress::BACKSPACE:
+                        KeyLog.pop_back();
+                        break;
+                    case KeyCodes::KeyPress::ALPHA:
+                    case KeyCodes::KeyPress::NUMBER:
+                    case KeyCodes::KeyPress::SPECIAL_CHARACTER:
+                        KeyLog += keysequence[0];
                         break;
                 }
-                break;
-            case REGULAR_KEY:
-                break;
         }
 
-        if ((int) key != 10)
-        {
-            KeyLog.append( std::to_string((int) key) );
-            KeyLog.append("|");
-        }
-        /*
-                if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_LEFT))
-                {
-                    // std::cout <<  " ! LEFT ! " << std::endl;
-                } else if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_UP))
-                {
-                    // std::cout <<  " ! UP ! " << std::endl;
-                } else if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_RIGHT))
-                {
-                    // std::cout <<  " ! RIGHT ! " << std::endl;
-                } else if (KeyCodes::IsKeyCode(inputbuffer, KeyCodes::CK_DOWN))
-                {
-                    // std::cout <<  " ! DOWN ! " << std::endl;
-                } else
-                {
-                    this->TextCommandBuffer << inputbuffer;
-                }
-                */
-        //this->WriteToBuffer(fmt::format("[BUFFER]: {}", key),
-        //                    ScreenPos(4, 5));
-    }
 }

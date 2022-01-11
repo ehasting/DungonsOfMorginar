@@ -175,7 +175,7 @@ namespace DofM
 
         void SetupNonBlockingTerminal();
 
-        virtual void ProcessKeyPressEventCallback(char &key) = 0;
+        virtual void ProcessKeyPressEventCallback(std::vector<char> &keysequence) = 0;
 
         void ScanKeyboardInput();
 

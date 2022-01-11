@@ -10,30 +10,12 @@ namespace DofM
 {
     class IOHandler : public NonBlockingTerminal
     {
-        enum ProcessOutcomes
-        {
-            ESC_START,
-            ESC_NEXT,
-            ESC_KEYCODE,
-            REGULAR_KEY
-        };
-        bool IsInKeyPressSequence = false;
-        bool IsExpectingSequenceIdentifier = false;
-        ProcessOutcomes ProcessIfEscapeSequence(char &key);
+
     public:
         std::string KeyLog;
-
-        IOHandler() : NonBlockingTerminal()
-        {
-
-        }
-
-        ~IOHandler()
-        {
-
-        }
-
-        void ProcessKeyPressEventCallback(char &key);
+        IOHandler() : NonBlockingTerminal() { }
+        ~IOHandler() {  }
+        void ProcessKeyPressEventCallback(std::vector<char> &keysequence);
     };
 }
 

@@ -21,8 +21,10 @@
 #include <stdio.h>
 #include <cmath>
 #include <queue>
+#include <thread>
 #include "screenpos.hpp"
 #include "keycodes.hpp"
+
 
 /*
  * Usage:
@@ -40,6 +42,10 @@ namespace DofM
     class NonBlockingTerminal
     {
     public:
+        void Terminate()
+        {
+            this->IsRunning = false;
+        }
         enum TermRendringAttrs
         {
             RESET = 0,
@@ -82,6 +88,7 @@ namespace DofM
         };
     private:
         bool IsReady = false;
+        bool IsRunning = true;
         bool IsInNonBlockingMode = false;
         std::queue<char> InputQueue;
         struct termios OriginalTerminalSettings;
@@ -168,16 +175,18 @@ namespace DofM
         }
         std::string GotoXY(ScreenPos pos);
         unsigned int RedrawCounter = 0;
+        std::shared_ptr<std::thread> KeyboardEventThread;
     public:
         NonBlockingTerminal();
         ~NonBlockingTerminal();
+
 
         unsigned short int RowMax = 0;
         unsigned short int ColMax = 0;
 
         void SetupNonBlockingTerminal();
 
-        virtual void ProcessKeyPressEventCallback(std::vector<char> &keysequence) = 0;
+        virtual void ProcessKeyPressEventCallback(KeyCodes::KeyPress detectedkeypress, std::vector<char> &keysequence) = 0;
 
         void ScanKeyboardInput();
 
@@ -208,6 +217,18 @@ namespace DofM
         }
         void ClearScreen();
 
+        void CheckForKeyboardEventWorker()
+        {
+            uint iter = 1;
+            while (this->IsRunning)
+            {
+                this->ScanKeyboardInput();
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+                iter++;
+            }
+        }
 
         void FillScreen()
         {

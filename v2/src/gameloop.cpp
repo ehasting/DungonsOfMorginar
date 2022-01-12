@@ -25,7 +25,7 @@ namespace DofM
         this->DynamicObjects.push_back(m);
 
         this->MainEventThread = std::make_shared<std::thread>([this]{ this->MainEventWorker(); });
-        this->KeyboardEventThread = std::make_shared<std::thread>([this]{ this->CheckForKeyboardEventWorker(); });
+
         this->DrawThread = std::make_shared<std::thread>([this]{ this->DrawLoopWorker(); });
 
     }
@@ -93,24 +93,7 @@ namespace DofM
     }
 
 
-    void GameLoop::CheckForKeyboardEventWorker()
-    {
-        fd_set read_fds;
-        int result;
-        int sfd = 0;
-        //std::cout << "Starting CheckForKeyboardEventWorker" << std::endl;
-        char c = 0;
-        uint iter = 1;
-        while (this->IsRunning)
-        {
-            Term.ScanKeyboardInput();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-            iter++;
-        }
-      //  std::cout << "Stopping CheckForKeyboardEventWorker" << std::endl;
-    }
 
     void GameLoop::Run()
     {
@@ -122,10 +105,10 @@ namespace DofM
 
         // exit after 10 sec
 
-        std::this_thread::sleep_for(std::chrono::seconds(15));
+        std::this_thread::sleep_for(std::chrono::seconds(60));
         this->IsRunning = false;
 
-        this->KeyboardEventThread->join();
+        Term.Terminate();
         this->MainEventThread->join();
         this->DrawThread->join();
 

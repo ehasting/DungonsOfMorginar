@@ -13,9 +13,6 @@ namespace DofM
 {
     struct KeyCodes
     {
-
-
-
         struct KeySequence
         {
             enum ASCII
@@ -55,8 +52,6 @@ namespace DofM
             static inline SEQ F8     = {ASCII::ESC, ASCII::CSI, 49, 56, ASCII::TILDE};
             static inline SEQ INSERT = {ASCII::ESC, ASCII::CSI, 50, ASCII::TILDE};
             static inline SEQ DELETE = {ASCII::ESC, ASCII::CSI, 51, ASCII::TILDE};
-            static inline SEQ BKSPACE= {ASCII::DEL};
-            static inline SEQ RETURN = {ASCII::LF};
 
             static inline SEQ PG_UP    = {ASCII::ESC, ASCII::CSI, 53, ASCII::TILDE};
             static inline SEQ PG_DOWN  = {ASCII::ESC, ASCII::CSI, 54, ASCII::TILDE};
@@ -68,22 +63,31 @@ namespace DofM
 
         enum KeyPress
         {
-            UP, DOWN, RIGHT, LEFT,
-            HOME, END,
-            PG_UP, PG_DOWN,
-            INSERT, DELETE, BACKSPACE,
-            RETURN,
-            F1, F2, F3, F4, F5, F6, F7, F8,
-            ESC,
+            UP, DOWN, RIGHT, LEFT, //3
+            HOME, END, //5
+            PG_UP, PG_DOWN, //7
+            INSERT, DELETE, BACKSPACE, //10
+            RETURN, //11
+            F1, F2, F3, F4, F5, F6, F7, F8, //19
+            ESC, //20
             ALPHA,
             NUMBER,
             SPECIAL_CHARACTER,
+            UNDETECTED_ESCAPE_SEQUENCE = 9998,
             NO_KEY = 9999
         };
 
+        static KeyPress MatchKey(const char &key)
+        {
+            if (key == KeySequence::ASCII::DEL) return KeyPress::BACKSPACE;
+            else if (key == KeySequence::ASCII::LF) return KeyPress::RETURN;
+            else if (IsLetter({key})) return KeyPress::ALPHA;
+            else if (IsNumber({key})) return KeyPress::NUMBER;
+            else if (IsSpecialCharacters({key})) return KeyPress::SPECIAL_CHARACTER;
+            else return KeyPress::NO_KEY;
+        }
 
-
-        static KeyPress MatchKey(const std::vector<char> &ksq)
+        static KeyPress MatchSequence(const std::vector<char> &ksq)
         {
             if (ksq == KeySequence::ESCAPE) return KeyPress::ESC;
             else if (ksq == KeySequence::UP) return KeyPress::UP;
@@ -106,15 +110,11 @@ namespace DofM
 
             else if (ksq == KeySequence::INSERT) return KeyPress::INSERT;
             else if (ksq == KeySequence::DELETE) return KeyPress::DELETE;
-            else if (ksq == KeySequence::BKSPACE) return KeyPress::BACKSPACE;
-            else if (ksq == KeySequence::RETURN) return KeyPress::RETURN;
-            else if (IsLetter(ksq))
-                return KeyPress::ALPHA;
-            else if (IsNumber(ksq))
-                return KeyPress::NUMBER;
-            else if (IsSpecialCharacters(ksq))
-                return KeyPress::SPECIAL_CHARACTER;
-            else return KeyPress::NO_KEY;
+
+
+            else if (IsEscapeSequence(ksq)) return KeyPress::UNDETECTED_ESCAPE_SEQUENCE;
+            else throw std::invalid_argument("We are trying to detect sequence, but this is not an sequence");
+
         }
 
         static char ValidateAndReturnSingleChar(const std::vector<char> &keys)
@@ -162,6 +162,18 @@ namespace DofM
             return false;
         }
 
+        static bool IsEscapeSequence(const std::vector<char> &keys)
+        {
+            if (keys.size() >= 3)
+            {
+                if (keys[0] == KeySequence::ASCII::ESC && keys[1] == KeySequence::ASCII::CSI)
+                {
+                    return true;
+                }
+
+            }
+            return false;
+        }
 
 
         static constexpr bool IsKeyCode(char &incodesequence, unsigned int keycode)

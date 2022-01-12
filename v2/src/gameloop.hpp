@@ -31,11 +31,9 @@ namespace DofM
     private:
         std::vector<std::shared_ptr<DynamicObject> > DynamicObjects;
         std::shared_ptr<std::thread> MainEventThread;
-        std::shared_ptr<std::thread> KeyboardEventThread;
         std::shared_ptr<std::thread> DrawThread;
 
         void MainEventWorker();
-        void CheckForKeyboardEventWorker();
         void DrawLoopWorker();
         DofM::Tools ToolsObject;
         IOHandler Term;

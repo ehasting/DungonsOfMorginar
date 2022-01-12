@@ -15,7 +15,7 @@ namespace DofM
         std::string KeyLog;
         IOHandler() : NonBlockingTerminal() { }
         ~IOHandler() {  }
-        void ProcessKeyPressEventCallback(std::vector<char> &keysequence);
+        void ProcessKeyPressEventCallback(KeyCodes::KeyPress detectedkeypress, std::vector<char> &keysequence);
     };
 }
 

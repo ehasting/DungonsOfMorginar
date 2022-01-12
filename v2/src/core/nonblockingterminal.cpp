@@ -12,6 +12,7 @@ namespace DofM
     NonBlockingTerminal::NonBlockingTerminal()
     {
         this->ReadTerminalSize();
+        this->KeyboardEventThread = std::make_shared<std::thread>([this]{ this->CheckForKeyboardEventWorker(); });
     }
 
     NonBlockingTerminal::~NonBlockingTerminal()
@@ -23,6 +24,7 @@ namespace DofM
             const std::string showcursor("\033[?25h");
             std::cout << showcursor;
         }
+        this->KeyboardEventThread->join();
         //std::cout << std::endl;
         //std::cout << "content of ScreenBuffer" << std::endl;
         //for (auto c : this->ScreenBuffer)
@@ -210,9 +212,9 @@ namespace DofM
             {
                 this->IOMutex.lock();
                 InputQueue.push(this->ReadCharBuffer[0]);
+                this->IOMutex.unlock();
                 this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])),
                                     ScreenPos(4, 7),13);
-                this->IOMutex.unlock();
                 this->ScanKeyboardInput();
             }
             else
@@ -224,38 +226,83 @@ namespace DofM
     void NonBlockingTerminal::ProcessKeyPressEventQueue()
     {
         this->IOMutex.lock();
-
-        if (!this->InputQueue.empty())
+        bool inescsequence = false;
+        bool csifound = false;
+        int csiindex = 0;
+        std::vector<char> sequence;
+        // Process whatever is in    the queue untill empty or we return in loop.
+        while (!this->InputQueue.empty() && this->IsRunning)
         {
-            bool inescsequence = false;
-            std::vector<char> sequence;
-            while (!this->InputQueue.empty())
+            this->WriteToBuffer(fmt::format("InputQueue Size: {} ({})", this->InputQueue.size(), (int)this->InputQueue.front()), ScreenPos(15,15), 28);
+            auto n = this->InputQueue.front();
+
+            // ONLY enter here if we are in a escape seqeunce, before CSI is found.
+            if ((n == KeyCodes::KeySequence::ASCII::ESC || inescsequence) && !csifound)
             {
-                this->WriteToBuffer(fmt::format("InputQueue Size: {} ({})", this->InputQueue.size(), this->InputQueue.front()), ScreenPos(15,15), 28);
-                auto n = this->InputQueue.front();
-
-
-                if (n == KeyCodes::KeySequence::ASCII::ESC || inescsequence)
+                if (n == KeyCodes::KeySequence::ASCII::ESC && inescsequence)
                 {
-                    if (n == KeyCodes::KeySequence::ASCII::ESC && inescsequence)
-                    {
-                        // New escape sequence, we will not pop the character, instead go with previous sequence
-                        break;
-                    }
-                    inescsequence = true;
-                    sequence.push_back(n);
-                    this->InputQueue.pop();
+                    // Previous escape was probably escape.. lets process that.
+                    this->ProcessKeyPressEventCallback(KeyCodes::KeyPress::ESC, sequence);
+                    // Do not pop, since we are now processing previous sequence.
+                    break;  // with return we will continue with reset state, but we could also clean state then continue.
+                }
+                else if (n == KeyCodes::KeySequence::ASCII::CSI && inescsequence)
+                {
+                    csifound = true;
+                    csiindex = 0;
+                }
+                // escape sequence is progressing correctly.
+                inescsequence = true;
+                sequence.push_back(n);
+                this->InputQueue.pop();
+            }
+            else if (csifound)
+            {
+                sequence.push_back(n);
+                this->InputQueue.pop();
+                csiindex++;
+                // this is an escape sequence that expects ONE letter. i.e. <esc>[A
+                if (KeyCodes::IsLetter({n}) && csiindex == 1)
+                {
+                    auto foundkeypress = KeyCodes::MatchSequence(sequence);
+                    this->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                    break;
+                }
+                else if (csiindex == 4)
+                {
+                    // we will throw away the sequence if its beyond 4 letters
+                    break;
                 }
                 else
                 {
-                    sequence.push_back(n);
-                    this->InputQueue.pop();
-                    break;
+                    auto foundkeypress = KeyCodes::MatchSequence(sequence);
+                    if (foundkeypress != KeyCodes::KeyPress::UNDETECTED_ESCAPE_SEQUENCE)
+                    {
+                        this->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                        break;
+                    }
                 }
             }
-            if (!sequence.empty())
-                this->ProcessKeyPressEventCallback(sequence);
+            else
+            {
+                sequence.push_back(n);
+                this->InputQueue.pop();
+                // we will try to validate this to be a typable key
+                auto foundkeypress = KeyCodes::MatchKey(n);
+
+                if (foundkeypress == KeyCodes::KeyPress::NO_KEY )
+                {
+                    // Ignore whatever.. we cant match on anything.. just wipe and break the loop
+                    sequence.clear();
+                    break;
+                }
+                this->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                sequence.clear();
+            }
+
+
         }
+
         this->IOMutex.unlock();
     }
 }

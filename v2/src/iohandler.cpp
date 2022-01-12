@@ -35,7 +35,8 @@ namespace DofM
                                             ScreenPos(4, 5), 16);
                         break;
                     case KeyCodes::KeyPress::BACKSPACE:
-                        KeyLog.pop_back();
+                        if (!KeyLog.empty())
+                            KeyLog.pop_back();
                         break;
                     case KeyCodes::KeyPress::ALPHA:
                     case KeyCodes::KeyPress::NUMBER:

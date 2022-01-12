@@ -22,6 +22,8 @@
 #include <cmath>
 #include <queue>
 #include "screenpos.hpp"
+#include "keycodes.hpp"
+
 /*
  * Usage:
  * Before usage:

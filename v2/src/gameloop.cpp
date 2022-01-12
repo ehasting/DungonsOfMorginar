@@ -71,7 +71,6 @@ namespace DofM
         //std::cout << "Starting MainEventWorker" << std::endl;
         while (this->IsRunning)
         {
-
             auto now = std::chrono::steady_clock::now();
             if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lasttick).count() > 999)
             {
@@ -88,11 +87,7 @@ namespace DofM
                     n->Update(0);
                 }
             }
-
-
-
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
         }
         //std::cout << "Stopping MainEventWorker" << std::endl;
     }

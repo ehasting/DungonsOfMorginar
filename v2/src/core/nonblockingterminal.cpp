@@ -223,20 +223,39 @@ namespace DofM
 
     void NonBlockingTerminal::ProcessKeyPressEventQueue()
     {
+        this->IOMutex.lock();
+
         if (!this->InputQueue.empty())
         {
+            bool inescsequence = false;
             std::vector<char> sequence;
-            this->IOMutex.lock();
             while (!this->InputQueue.empty())
             {
-            this->WriteToBuffer(fmt::format("InputQueue Size: {} ({})", this->InputQueue.size(), this->InputQueue.front()), ScreenPos(15,15), 28);
-            auto n = this->InputQueue.front();
-            sequence.push_back(n);
-            this->InputQueue.pop();
+                this->WriteToBuffer(fmt::format("InputQueue Size: {} ({})", this->InputQueue.size(), this->InputQueue.front()), ScreenPos(15,15), 28);
+                auto n = this->InputQueue.front();
 
+
+                if (n == KeyCodes::KeySequence::ASCII::ESC || inescsequence)
+                {
+                    if (n == KeyCodes::KeySequence::ASCII::ESC && inescsequence)
+                    {
+                        // New escape sequence, we will not pop the character, instead go with previous sequence
+                        break;
+                    }
+                    inescsequence = true;
+                    sequence.push_back(n);
+                    this->InputQueue.pop();
+                }
+                else
+                {
+                    sequence.push_back(n);
+                    this->InputQueue.pop();
+                    break;
+                }
             }
-            this->ProcessKeyPressEventCallback(sequence);
-            this->IOMutex.unlock();
+            if (!sequence.empty())
+                this->ProcessKeyPressEventCallback(sequence);
         }
+        this->IOMutex.unlock();
     }
 }

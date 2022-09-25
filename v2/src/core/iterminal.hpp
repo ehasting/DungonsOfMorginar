@@ -20,7 +20,6 @@ namespace DofM
         virtual void ClearScreen() = 0;
         virtual void ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata) = 0;
         virtual void ReadPlatformNativeTerminalSize(unsigned short &maxrow, unsigned short &maxcol) = 0;
-        //virtual void ProcessKeyPressEventCallback(KeyCodes::KeyPress detectedkeypress, std::vector<char> &keysequence) = 0;
     };
 
 } // DofM

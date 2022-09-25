@@ -15,11 +15,12 @@ namespace DofM
     {
 #if defined(WIN64)
         NativeTerminal = std::make_shared<WindowsTerminal>();
+        InHandler = std::make_shared<SharedInputHandler>();
 #elif defined(LINUX)
         NativeTerminal = std::make_shared<LinuxTerminal>();
 #endif
         this->NativeTerminal->SetupNonBlockingTerminal();
-        this->Term = std::make_unique<NonBlockingTerminal>(this->NativeTerminal);
+        this->Term = std::make_unique<NonBlockingTerminal>(this->NativeTerminal, this->InHandler);
 
         std::cout <<  "TERMINAL SETUP DONE" << std::endl;
         std::shared_ptr<Character> n = std::make_shared<Character>("Hero 2000", Location("character", 1, 1, 1));
@@ -38,7 +39,7 @@ namespace DofM
     {
         //std::cout << "In buffer: " << this->TextCommandBuffer.str() << std::endl;
         this->DynamicObjects.clear();
-        std::cout << this->InHandler.KeyLog <<std::endl;
+        std::cout << this->InHandler->KeyLog <<std::endl;
     }
 
 
@@ -62,7 +63,7 @@ namespace DofM
                                    ScreenPos(6, rowoffset), Term->ColMax - 10);
                 rowoffset++;
             }
-            Term->WriteToBuffer("Test buffer: " + InHandler.KeyLog, ScreenPos(7, rowoffset+1), 32);
+            Term->WriteToBuffer("Test buffer: " + InHandler->KeyLog, ScreenPos(7, rowoffset+1), 32);
             Term->FillScreen();
             Term->Redraw();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

@@ -21,7 +21,7 @@
 #include "objects/character.hpp"
 #include "objects/mouse.hpp"
 #include "core/keycodes.hpp"
-#include "iohandlershared.hpp"
+#include "sharedinputhandler.hpp"
 
 #if defined(WIN64)
 #include "platform/windowsterminal.hpp"
@@ -39,14 +39,15 @@ namespace DofM
         std::vector<std::shared_ptr<DynamicObject> > DynamicObjects;
         std::shared_ptr<std::thread> MainEventThread;
         std::shared_ptr<std::thread> DrawThread;
-
-        void MainEventWorker();
-        void DrawLoopWorker();
         DofM::Tools ToolsObject;
-        IOHandlerShared InHandler;
+        std::shared_ptr<InputHandler> InHandler;
         std::shared_ptr<ITerminal> NativeTerminal;
         std::unique_ptr<NonBlockingTerminal> Term;
         std::stringstream TextCommandBuffer;
+
+        void MainEventWorker();
+        void DrawLoopWorker();
+
 
     public:
         GameLoop();

@@ -19,16 +19,16 @@ namespace DofM
     {
     public:
         WindowsTerminal() : ITerminal() {}
-        ~WindowsTerminal() {}
-        void SetupNonBlockingTerminal();
-        void ClearScreen();
-        void ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata);
-        void ReadPlatformNativeTerminalSize(unsigned short &maxrow, unsigned short &maxcol);
+        ~WindowsTerminal() = default;
+        void SetupNonBlockingTerminal() override;
+        void ClearScreen() override;
+        void ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata) override;
+        void ReadPlatformNativeTerminalSize(unsigned short &maxrow, unsigned short &maxcol) override;
     private:
-        HANDLE InHandle, OutHandle;
-        DWORD OriginalInHandle, OriginalOutHandle;
-        INPUT_RECORD ReadCharBuffer[16];
-        DWORD ReadBufferBytesAvailable;
+        HANDLE InHandle{}, OutHandle{};
+        DWORD OriginalInHandle{}, OriginalOutHandle{};
+        INPUT_RECORD ReadCharBuffer[16]{};
+        DWORD ReadBufferBytesAvailable{};
     };
 
 } // DofM

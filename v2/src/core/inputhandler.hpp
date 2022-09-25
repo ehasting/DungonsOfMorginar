@@ -11,6 +11,7 @@ namespace DofM
     class InputHandler
     {
     public:
+        std::string KeyLog;
         virtual void ProcessKeyPressEventCallback(KeyCodes::KeyPress detectedkeypress, std::vector<char> &keysequence) = 0;
     };
 }

@@ -42,7 +42,7 @@ namespace DofM
     class NonBlockingTerminal
     {
     public:
-        NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype);
+        NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype, std::shared_ptr<InputHandler> inhandler);
         ~NonBlockingTerminal();
         void Terminate()
         {
@@ -185,10 +185,12 @@ namespace DofM
                 this->Terminal->ScanKeyboardInput(outdata);
                 if (!outdata->empty())
                 {
+                    this->IOMutex.lock();
                     for ( auto &n : *outdata)
                     {
                         this->InputQueue.push(n);
                     }
+                    this->IOMutex.unlock();
                     this->ProcessKeyPressEventQueue();
                 }
 

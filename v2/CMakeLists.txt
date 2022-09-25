@@ -26,7 +26,7 @@ set(HEADER_FILES
         src/core/keycodes.hpp
         src/core/screenpos.cpp src/core/screenpos.hpp
         src/coremodels/livingobject.cpp src/coremodels/livingobject.hpp
-        src/core/livingstats.cpp src/core/livingstats.hpp src/iohandlershared.hpp src/core/inputhandler.hpp src/core/iterminal.hpp)
+        src/core/livingstats.cpp src/core/livingstats.hpp src/sharedinputhandler.hpp src/core/inputhandler.hpp src/core/iterminal.hpp)
 
 
 message("--- Adding ${CMAKE_SYSTEM_NAME} related headers")

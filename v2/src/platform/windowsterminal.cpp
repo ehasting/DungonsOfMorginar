@@ -90,7 +90,7 @@ namespace DofM
                 {
                     for (i = 0; i < readchars; i++)
                     {
-                        outdata->push_back(this->ReadCharBuffer[i].Event.KeyEvent.uChar.AsciiChar);
+                       outdata->push_back(this->ReadCharBuffer[i].Event.KeyEvent.uChar.AsciiChar);
                     }
                     //this->WriteToBuffer(fmt::format("ReadCode: {}", (int) readchars), ScreenPos(4, 7+readchars), 13);
                 }

@@ -8,9 +8,9 @@
 #include <thread>
 namespace DofM
 {
-    NonBlockingTerminal::NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype)
+    NonBlockingTerminal::NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype, std::shared_ptr<InputHandler> inhandler)
+        : Terminal(terminaltype), InHandler(inhandler)
     {
-        this->Terminal = terminaltype;
         this->Terminal->SetupNonBlockingTerminal();
         this->ReadTerminalSize();
         this->KeyboardEventThread = std::make_shared<std::thread>([this]{ this->CheckForKeyboardEventWorker(); });
@@ -25,13 +25,6 @@ namespace DofM
             std::cout << showcursor;
         }
         this->KeyboardEventThread->join();
-        //std::cout << std::endl;
-        //std::cout << "content of ScreenBuffer" << std::endl;
-        //for (auto c : this->ScreenBuffer)
-        //{
-        //    std::cout << c;
-        //}
-        //std::cout << std::endl;
     }
 
     void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength)
@@ -138,7 +131,6 @@ namespace DofM
         this->DrawMutex.lock();
         std::string outbuffer;
 
-        //std::cout << this->GotoXY(ScreenPos(1,1));
         unsigned int row = 1;
         unsigned int linecursor = 0;
         unsigned int buffercursor = 0;

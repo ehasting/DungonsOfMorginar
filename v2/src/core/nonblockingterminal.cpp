@@ -8,12 +8,13 @@
 #include <thread>
 namespace DofM
 {
-    NonBlockingTerminal::NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype, std::shared_ptr<InputHandler> inhandler)
-        : Terminal(terminaltype), InHandler(inhandler)
+    NonBlockingTerminal::NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype)
+        : Terminal(terminaltype)
     {
         this->Terminal->SetupNonBlockingTerminal();
         this->ReadTerminalSize();
         this->KeyboardEventThread = std::make_shared<std::thread>([this]{ this->CheckForKeyboardEventWorker(); });
+        this->IsReady = true;
     }
 
     NonBlockingTerminal::~NonBlockingTerminal()
@@ -183,7 +184,7 @@ namespace DofM
                 if (n == KeyCodes::KeySequence::ASCII::ESC && inescsequence)
                 {
                     // Previous escape was probably escape.. lets process that.
-                    this->InHandler->ProcessKeyPressEventCallback(KeyCodes::KeyPress::ESC, sequence);
+                    this->AddProcessedInput(std::make_tuple(KeyCodes::KeyPress::ESC, sequence));
                     // Do not pop, since we are now processing previous sequence.
                     break;  // with return we will continue with reset state, but we could also clean state then continue.
                 }
@@ -206,7 +207,7 @@ namespace DofM
                 if (KeyCodes::IsLetter({n}) && csiindex == 1)
                 {
                     auto foundkeypress = KeyCodes::MatchSequence(sequence);
-                    this->InHandler->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                    this->AddProcessedInput(std::make_tuple(foundkeypress, sequence));
                     break;
                 }
                 else if (csiindex == 4)
@@ -219,7 +220,7 @@ namespace DofM
                     auto foundkeypress = KeyCodes::MatchSequence(sequence);
                     if (foundkeypress != KeyCodes::KeyPress::UNDETECTED_ESCAPE_SEQUENCE)
                     {
-                        this->InHandler->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                        this->AddProcessedInput(std::make_tuple(foundkeypress, sequence));
                         break;
                     }
                 }
@@ -237,7 +238,7 @@ namespace DofM
                     sequence.clear();
                     break;
                 }
-                this->InHandler->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                this->AddProcessedInput(std::make_tuple(foundkeypress, sequence));
                 sequence.clear();
             }
 

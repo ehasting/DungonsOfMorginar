@@ -42,7 +42,7 @@ namespace DofM
     class NonBlockingTerminal
     {
     public:
-        NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype, std::shared_ptr<InputHandler> inhandler);
+        NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype);
         ~NonBlockingTerminal();
         void Terminate()
         {
@@ -54,10 +54,12 @@ namespace DofM
         bool IsInNonBlockingMode = false;
         std::queue<char> InputQueue;
 
+        std::queue<std::tuple<KeyCodes::KeyPress, std::vector<char>>> ProcessedInputQueue;
+
+        std::mutex ProcessedInputMutex;
         std::mutex IOMutex;
         std::mutex DrawMutex;
 
-        std::shared_ptr<InputHandler> InHandler;
         std::shared_ptr<ITerminal> Terminal;
 
         void ProcessKeyPressEventQueue();
@@ -77,6 +79,9 @@ namespace DofM
             std::fill(this->ScreenBuffer.begin(), this->ScreenBuffer.end(), ' ');
             this->DrawMutex.unlock();
         }
+
+
+
 
 
         std::map<std::string, std::string> LiveScreenBuffer;
@@ -152,6 +157,34 @@ namespace DofM
 
         void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, std::vector<TermRendringAttrs> &attrs );
         void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength);
+        bool HasProcessedInput()
+        {
+            this->ProcessedInputMutex.lock();
+            auto rval = this->ProcessedInputQueue.empty();
+            this->ProcessedInputMutex.unlock();
+            return !rval;
+
+        }
+        std::tuple<KeyCodes::KeyPress, std::vector<char>> GetNextProcessedInput()
+        {
+
+            if (this->HasProcessedInput())
+            {
+                this->ProcessedInputMutex.lock();
+                auto rval = this->ProcessedInputQueue.front();
+                this->ProcessedInputQueue.pop();
+                this->ProcessedInputMutex.unlock();
+                return rval;
+            }
+            throw std::invalid_argument("BUG: GetNextProcessedInput() requested on an empty queue, check with HasProcessedInput first.");
+        }
+
+        void AddProcessedInput(std::tuple<KeyCodes::KeyPress, std::vector<char>> data)
+        {
+            this->ProcessedInputMutex.lock();
+            this->ProcessedInputQueue.push(data);
+            this->ProcessedInputMutex.unlock();
+        }
         void CheckIfOnScreen(ScreenPos pos, unsigned int textlength)
         {
             if (pos.Col() > this->ColMax)

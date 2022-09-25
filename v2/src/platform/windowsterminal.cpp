@@ -75,12 +75,7 @@ namespace DofM
 
     void WindowsTerminal::ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata)
     {
-        //int timer = GetTickCount();
-        //while(timer+10000 > GetTickCount())
-        //{
-        //}
         outdata->clear();
-        long length;
         if (GetNumberOfConsoleInputEvents(this->InHandle, &this->ReadBufferBytesAvailable) != 0)
         {
             DWORD readchars, i;
@@ -92,11 +87,8 @@ namespace DofM
                     {
                        outdata->push_back(this->ReadCharBuffer[i].Event.KeyEvent.uChar.AsciiChar);
                     }
-                    //this->WriteToBuffer(fmt::format("ReadCode: {}", (int) readchars), ScreenPos(4, 7+readchars), 13);
                 }
-                //timer = GetTickCount();
             }
-            //this->ScanKeyboardInput();
         }
     }
 } // DofM

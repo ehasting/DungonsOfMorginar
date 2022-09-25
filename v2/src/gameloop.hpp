@@ -21,8 +21,7 @@
 #include "objects/character.hpp"
 #include "objects/mouse.hpp"
 #include "core/keycodes.hpp"
-#include "sharedinputhandler.hpp"
-
+#include "core/inputhandler.hpp"
 #if defined(WIN64)
 #include "platform/windowsterminal.hpp"
 #elif defined(LINUX)
@@ -39,21 +38,23 @@ namespace DofM
         std::vector<std::shared_ptr<DynamicObject> > DynamicObjects;
         std::shared_ptr<std::thread> MainEventThread;
         std::shared_ptr<std::thread> DrawThread;
+        std::shared_ptr<std::thread> InputProcessThread;
         DofM::Tools ToolsObject;
-        std::shared_ptr<InputHandler> InHandler;
         std::shared_ptr<ITerminal> NativeTerminal;
-        std::unique_ptr<NonBlockingTerminal> Term;
+        std::shared_ptr<NonBlockingTerminal> Term;
         std::stringstream TextCommandBuffer;
-
         void MainEventWorker();
         void DrawLoopWorker();
+        void InputProcessorWorker();
 
 
     public:
         GameLoop();
         ~GameLoop();
         void Run();
+        void ProcessKeyPressEventCallback(std::tuple<KeyCodes::KeyPress, std::vector<char>>);
         bool IsRunning = true;
+        std::string KeyLog;
     };
 }
 

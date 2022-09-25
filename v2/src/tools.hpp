@@ -5,6 +5,12 @@
 #ifndef V2_TOOLS_H
 #define V2_TOOLS_H
 
+#if defined(_WIN64)
+
+#elif defined(__linux__)
+#include <termios.h>
+#endif
+
 #include <string>
 #include <locale>
 #include <vector>
@@ -14,8 +20,6 @@
 #include <chrono>
 #include <typeinfo>
 #include <memory>
-
-#include <termios.h>
 #include <stdlib.h>
 #include <stdio.h>
 

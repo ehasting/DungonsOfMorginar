@@ -6,17 +6,22 @@
 #include <chrono>
 #include <typeinfo>
 #include "map/mapregions.hpp"
-
-
+#include <memory>
 
 
 namespace DofM
 {
     GameLoop::GameLoop()
     {
-        Term.SetupNonBlockingTerminal();
+#if defined(WIN64)
+        NativeTerminal = std::make_shared<WindowsTerminal>();
+#elif defined(LINUX)
+        NativeTerminal = std::make_shared<LinuxTerminal>();
+#endif
+        this->NativeTerminal->SetupNonBlockingTerminal();
+        this->Term = std::make_unique<NonBlockingTerminal>(this->NativeTerminal);
 
-
+        std::cout <<  "TERMINAL SETUP DONE" << std::endl;
         std::shared_ptr<Character> n = std::make_shared<Character>("Hero 2000", Location("character", 1, 1, 1));
         std::shared_ptr<Mouse> m = std::make_shared<Mouse>("Arnold");
 
@@ -25,7 +30,6 @@ namespace DofM
         this->DynamicObjects.push_back(m);
 
         this->MainEventThread = std::make_shared<std::thread>([this]{ this->MainEventWorker(); });
-
         this->DrawThread = std::make_shared<std::thread>([this]{ this->DrawLoopWorker(); });
 
     }
@@ -34,7 +38,7 @@ namespace DofM
     {
         //std::cout << "In buffer: " << this->TextCommandBuffer.str() << std::endl;
         this->DynamicObjects.clear();
-        std::cout << this->Term.KeyLog <<std::endl;
+        std::cout << this->InHandler.KeyLog <<std::endl;
     }
 
 
@@ -54,13 +58,13 @@ namespace DofM
                     //std::cout << n->GetRealObject<Mouse>()->Moustrubate() << std::endl;
                 }
 
-                Term.WriteToBuffer(std::to_string(rowoffset) + "::" + n->GetDescriptionLine(),
-                                   ScreenPos(6, rowoffset), Term.ColMax - 10);
+                Term->WriteToBuffer(std::to_string(rowoffset) + "::" + n->GetDescriptionLine(),
+                                   ScreenPos(6, rowoffset), Term->ColMax - 10);
                 rowoffset++;
             }
-            Term.WriteToBuffer(Term.KeyLog, ScreenPos(7, rowoffset+1), 32);
-            Term.FillScreen();
-            Term.Redraw();
+            Term->WriteToBuffer("Test buffer: " + InHandler.KeyLog, ScreenPos(7, rowoffset+1), 32);
+            Term->FillScreen();
+            Term->Redraw();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
@@ -97,8 +101,8 @@ namespace DofM
 
     void GameLoop::Run()
     {
-        //std::cout << "Starting GameLoop::Run" << std::endl;
-        MapRegions reg;
+        std::cout << "Starting GameLoop::Run" << std::endl;
+        //MapRegions reg;
         //reg.DrawRegion(MapRegions::Region1);
 
 
@@ -108,7 +112,7 @@ namespace DofM
         std::this_thread::sleep_for(std::chrono::seconds(60));
         this->IsRunning = false;
 
-        Term.Terminate();
+        Term->Terminate();
         this->MainEventThread->join();
         this->DrawThread->join();
 

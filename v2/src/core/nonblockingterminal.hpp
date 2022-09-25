@@ -4,7 +4,6 @@
 
 #ifndef DUNGONSOFMORGINAR_NONBLOCKINGTERMINAL_HPP
 #define DUNGONSOFMORGINAR_NONBLOCKINGTERMINAL_HPP
-
 #include <string>
 #include <locale>
 #include <vector>
@@ -16,7 +15,7 @@
 #include <memory>
 #include <map>
 #include "fmt/core.h"
-#include <termios.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <cmath>
@@ -24,7 +23,8 @@
 #include <thread>
 #include "screenpos.hpp"
 #include "keycodes.hpp"
-
+#include "inputhandler.hpp"
+#include "iterminal.hpp"
 
 /*
  * Usage:
@@ -42,59 +42,24 @@ namespace DofM
     class NonBlockingTerminal
     {
     public:
+        NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype);
+        ~NonBlockingTerminal();
         void Terminate()
         {
             this->IsRunning = false;
         }
-        enum TermRendringAttrs
-        {
-            RESET = 0,
-            BOLD = 1,
-            BLINK = 5,
-            REV_BLINK = 7,
-
-            BG_BLACK = 40,
-            BG_RED = 41,
-            BG_GREEN = 42,
-            BG_BROWN = 43,
-            BG_BLUE = 44,
-            BG_MAGENTA = 45,
-            BG_CYAN = 46,
-            BG_WHITE = 47,
-            BG_BLACK_BR = 100,
-            BG_RED_BR = 101,
-            BG_GREEN_BR = 102,
-            BG_BROWN_BR = 103,
-            BG_BLUE_BR = 104,
-            BG_MAGENTA_BR = 105,
-            BG_CYAN_BR = 106,
-            BG_WHITE_BR = 107,
-            FG_BLACK = 30,
-            FG_RED = 31,
-            FG_GREEN = 32,
-            FG_BROWN = 33,
-            FG_BLUE = 34,
-            FG_MAGENTA = 35,
-            FG_CYAN = 36,
-            FG_WHITE = 37,
-            FG_BLACK_BR = 90,
-            FG_RED_BR = 91,
-            FG_GREEN_BR = 92,
-            FG_BROWN_BR = 93,
-            FG_BLUE_BR = 94,
-            FG_MAGENTA_BR = 95,
-            FG_CYAN_BR = 96,
-            FG_WHITE_BR = 97
-        };
-    private:
+    protected:
         bool IsReady = false;
         bool IsRunning = true;
         bool IsInNonBlockingMode = false;
         std::queue<char> InputQueue;
-        struct termios OriginalTerminalSettings;
+
         std::mutex IOMutex;
         std::mutex DrawMutex;
-        char ReadCharBuffer[2];
+
+        std::shared_ptr<InputHandler> InHandler;
+        std::shared_ptr<ITerminal> Terminal;
+
         void ProcessKeyPressEventQueue();
         std::string GetRenderingTableLookupKey(ScreenPos pos)
         {
@@ -153,7 +118,7 @@ namespace DofM
         {
             return this->GetRendringTableData(this->GetScreenPosition(bufferpos));
         }
-        void ReadTerminalSize();
+
         unsigned int GetBufferPosition(ScreenPos pos)
         {
             unsigned int rval = ((pos.Row() * this->ColMax) + pos.Col()) - 1;
@@ -176,19 +141,12 @@ namespace DofM
         std::string GotoXY(ScreenPos pos);
         unsigned int RedrawCounter = 0;
         std::shared_ptr<std::thread> KeyboardEventThread;
+
     public:
-        NonBlockingTerminal();
-        ~NonBlockingTerminal();
+        unsigned short int RowMax = USHRT_MAX;
+        unsigned short int ColMax = USHRT_MAX;
 
-
-        unsigned short int RowMax = 0;
-        unsigned short int ColMax = 0;
-
-        void SetupNonBlockingTerminal();
-
-        virtual void ProcessKeyPressEventCallback(KeyCodes::KeyPress detectedkeypress, std::vector<char> &keysequence) = 0;
-
-        void ScanKeyboardInput();
+        void ReadTerminalSize();
 
         void Redraw();
 
@@ -215,14 +173,25 @@ namespace DofM
                 throw std::invalid_argument(error);
             }
         }
-        void ClearScreen();
+
 
         void CheckForKeyboardEventWorker()
         {
-            uint iter = 1;
+            unsigned int iter = 1;
+            std::shared_ptr<std::vector<char> > outdata = std::make_shared<std::vector<char> >();
+            outdata->reserve(16);
             while (this->IsRunning)
             {
-                this->ScanKeyboardInput();
+                this->Terminal->ScanKeyboardInput(outdata);
+                if (!outdata->empty())
+                {
+                    for ( auto &n : *outdata)
+                    {
+                        this->InputQueue.push(n);
+                    }
+                    this->ProcessKeyPressEventQueue();
+                }
+
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
 

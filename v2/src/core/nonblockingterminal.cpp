@@ -3,14 +3,15 @@
 //
 
 #include "nonblockingterminal.hpp"
-#include <sys/ioctl.h>
 #include <stdio.h>
 #include <algorithm>
 #include <thread>
 namespace DofM
 {
-    NonBlockingTerminal::NonBlockingTerminal()
+    NonBlockingTerminal::NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype)
     {
+        this->Terminal = terminaltype;
+        this->Terminal->SetupNonBlockingTerminal();
         this->ReadTerminalSize();
         this->KeyboardEventThread = std::make_shared<std::thread>([this]{ this->CheckForKeyboardEventWorker(); });
     }
@@ -19,7 +20,6 @@ namespace DofM
     {
         if (this->IsInNonBlockingMode)
         {
-            tcsetattr(0, TCSANOW, &this->OriginalTerminalSettings);
             std::cout << this->GotoXY(ScreenPos(this->ColMax, this->RowMax)) << std::endl;
             const std::string showcursor("\033[?25h");
             std::cout << showcursor;
@@ -75,6 +75,7 @@ namespace DofM
             this->RenderingTable[endkey] = "\033[0m";
         }
 
+        // should be one for loop
         for (unsigned int x = cleanbufferstartindex; x < cleanbufferstartindex+maxtextlength; x++)
         {
             this->ScreenBuffer[x] = ' ';
@@ -87,73 +88,43 @@ namespace DofM
         this->DrawMutex.unlock();
     }
 
+    void NonBlockingTerminal::ReadTerminalSize()
+    {
+        unsigned short maxrow, maxcol;
+        this->Terminal->ReadPlatformNativeTerminalSize(maxrow, maxcol);
+
+        // endline steals a hidden character which wraps in terminal, rendring without gains an additional char.
+        unsigned int endlineadjust = 0;
+        // Find terminal window size.
+        bool ischanged = false;
+
+        // update if changed
+        if (this->RowMax != maxrow-endlineadjust)
+        {
+            this->RowMax = maxrow-endlineadjust;
+            ischanged = true;
+        }
+        // update if changed
+        if (this->ColMax != maxcol-endlineadjust)
+        {
+            this->ColMax = maxcol-endlineadjust;
+            ischanged = true;
+        }
+
+        // any change will triggger a full redraw - flush buffer and redraw
+        if (ischanged)
+        {
+            this->ResizeScreenBuffer();
+            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(5,1), 25);
+            this->Terminal->ClearScreen();
+            //this->Redraw();
+        }
+    }
 
     std::string NonBlockingTerminal::GotoXY(ScreenPos pos)
     {
         this->CheckIfOnScreen(pos, 0);
         return fmt::format("\033[{};{}H", pos.Row(), pos.Col());
-    }
-    void NonBlockingTerminal::ReadTerminalSize()
-    {
-        // endline steals a hidden character which wraps in terminal, rendring without gains an additional char.
-        unsigned int endlineadjust = 0;
-        // Find terminal window size.
-        bool ischanged = false;
-        struct winsize w;
-        ioctl(0, TIOCGWINSZ, &w);
-
-        if (w.ws_row == 0 && w.ws_col == 0)
-        {
-            // we default if console reports bad dim (i.e. debug console etc)
-            //this->RowMax = 42;
-            //this->ColMax = 131;
-            //ischanged = true;
-            throw std::invalid_argument("This is not a compatible terminal, can't work with this.");
-        }
-        else
-        {
-            // update if changed
-            if (this->RowMax != w.ws_row-endlineadjust)
-            {
-                this->RowMax = w.ws_row-endlineadjust;
-                ischanged = true;
-            }
-            // update if changed
-            if (this->ColMax != w.ws_col-endlineadjust)
-            {
-                this->ColMax = w.ws_col-endlineadjust;
-                ischanged = true;
-            }
-        }
-        // any change will triggger a full redraw - flush buffer and redraw
-        if (ischanged)
-        {
-
-            this->ResizeScreenBuffer();
-            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(5,1), 25);
-            this->ClearScreen();
-            //this->Redraw();
-        }
-
-    }
-    void NonBlockingTerminal::SetupNonBlockingTerminal()
-    {
-        IsInNonBlockingMode = true;
-        struct termios newsettings;
-        tcgetattr(0, &this->OriginalTerminalSettings);
-        newsettings = this->OriginalTerminalSettings;
-        newsettings.c_lflag &= ~ICANON;
-        newsettings.c_lflag &= ~ECHO;
-        newsettings.c_lflag &= ~ISIG;
-        newsettings.c_cc[VMIN] = 0;
-        newsettings.c_cc[VTIME] = 0;
-        tcsetattr(0, TCSANOW, &newsettings);
-        std::cout.setf(std::ios::unitbuf);
-        this->ClearScreen();
-        this->ReadTerminalSize();
-        const std::string hidecursor("\033[?25l");
-        std::cout << hidecursor;
-        IsReady = true;
     }
 
     void NonBlockingTerminal::Redraw()
@@ -198,30 +169,8 @@ namespace DofM
         this->DrawMutex.unlock();
         RedrawCounter++;
     }
-    void NonBlockingTerminal::ClearScreen()
-    {
-        const std::string clear("\033[2J\033[1;1H");
-        std::cout << clear;
-    }
-    void NonBlockingTerminal::ScanKeyboardInput()
-    {
-            ReadCharBuffer[0] = EOF;
-            ReadCharBuffer[1] = EOF;
-            int l = read(STDIN_FILENO, this->ReadCharBuffer, 1);
-            if (l > 0)
-            {
-                this->IOMutex.lock();
-                InputQueue.push(this->ReadCharBuffer[0]);
-                this->IOMutex.unlock();
-                this->WriteToBuffer(fmt::format("ReadCode: {}", std::to_string((int) this->ReadCharBuffer[0])),
-                                    ScreenPos(4, 7),13);
-                this->ScanKeyboardInput();
-            }
-            else
-                // if we found data, do another read to check if buffer still has content
-                this->ProcessKeyPressEventQueue();
 
-    }
+
 
     void NonBlockingTerminal::ProcessKeyPressEventQueue()
     {
@@ -230,10 +179,10 @@ namespace DofM
         bool csifound = false;
         int csiindex = 0;
         std::vector<char> sequence;
-        // Process whatever is in    the queue untill empty or we return in loop.
+        // Process whatever is in the queue untill empty or we return in loop.
         while (!this->InputQueue.empty() && this->IsRunning)
         {
-            this->WriteToBuffer(fmt::format("InputQueue Size: {} ({})", this->InputQueue.size(), (int)this->InputQueue.front()), ScreenPos(15,15), 28);
+            this->WriteToBuffer(fmt::format("InputQueue Size: {} ({})", this->InputQueue.size(), (int)this->InputQueue.front()), ScreenPos(15,18), 28);
             auto n = this->InputQueue.front();
 
             // ONLY enter here if we are in a escape seqeunce, before CSI is found.
@@ -242,7 +191,7 @@ namespace DofM
                 if (n == KeyCodes::KeySequence::ASCII::ESC && inescsequence)
                 {
                     // Previous escape was probably escape.. lets process that.
-                    this->ProcessKeyPressEventCallback(KeyCodes::KeyPress::ESC, sequence);
+                    this->InHandler->ProcessKeyPressEventCallback(KeyCodes::KeyPress::ESC, sequence);
                     // Do not pop, since we are now processing previous sequence.
                     break;  // with return we will continue with reset state, but we could also clean state then continue.
                 }
@@ -265,7 +214,7 @@ namespace DofM
                 if (KeyCodes::IsLetter({n}) && csiindex == 1)
                 {
                     auto foundkeypress = KeyCodes::MatchSequence(sequence);
-                    this->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                    this->InHandler->ProcessKeyPressEventCallback(foundkeypress, sequence);
                     break;
                 }
                 else if (csiindex == 4)
@@ -278,7 +227,7 @@ namespace DofM
                     auto foundkeypress = KeyCodes::MatchSequence(sequence);
                     if (foundkeypress != KeyCodes::KeyPress::UNDETECTED_ESCAPE_SEQUENCE)
                     {
-                        this->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                        this->InHandler->ProcessKeyPressEventCallback(foundkeypress, sequence);
                         break;
                     }
                 }
@@ -296,7 +245,7 @@ namespace DofM
                     sequence.clear();
                     break;
                 }
-                this->ProcessKeyPressEventCallback(foundkeypress, sequence);
+                this->InHandler->ProcessKeyPressEventCallback(foundkeypress, sequence);
                 sequence.clear();
             }
 

@@ -21,11 +21,18 @@
 #include "objects/character.hpp"
 #include "objects/mouse.hpp"
 #include "core/keycodes.hpp"
-#include "iohandler.hpp"
+#include "iohandlershared.hpp"
+
+#if defined(WIN64)
+#include "platform/windowsterminal.hpp"
+#elif defined(LINUX)
+#include "platform/linuxterminal.hpp"
+#else
+#error "Unable to determine OS or current OS is not supported!"
+#endif
 
 namespace DofM
 {
-
     class GameLoop
     {
     private:
@@ -36,11 +43,12 @@ namespace DofM
         void MainEventWorker();
         void DrawLoopWorker();
         DofM::Tools ToolsObject;
-        IOHandler Term;
+        IOHandlerShared InHandler;
+        std::shared_ptr<ITerminal> NativeTerminal;
+        std::unique_ptr<NonBlockingTerminal> Term;
         std::stringstream TextCommandBuffer;
 
     public:
-//std::thread thObj(<CALLBACK>);
         GameLoop();
         ~GameLoop();
         void Run();

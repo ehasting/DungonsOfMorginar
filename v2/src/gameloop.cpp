@@ -13,9 +13,9 @@ namespace DofM
 {
     GameLoop::GameLoop()
     {
-#if defined(WIN64)
+#ifdef __WIN64__
         NativeTerminal = std::make_shared<WindowsTerminal>();
-#elif defined(LINUX)
+#elif __linux__
         NativeTerminal = std::make_shared<LinuxTerminal>();
 #endif
         this->NativeTerminal->SetupNonBlockingTerminal();
@@ -63,9 +63,11 @@ namespace DofM
                 break;
             case KeyCodes::KeyPress::ESC:
                 this->Term->WriteToBuffer(fmt::format("[BUFFER]: ESC"), ScreenPos(4, 5), 16);
+                this->Terminate();
                 break;
             case KeyCodes::KeyPress::F5:
                 this->Term->WriteToBuffer(fmt::format("[BUFFER]: F5"), ScreenPos(4, 5), 16);
+                this->Terminate();
                 break;
             case KeyCodes::KeyPress::BACKSPACE:
                 if (!KeyLog.empty())
@@ -95,6 +97,7 @@ namespace DofM
                 auto nextsequence = this->Term->GetNextProcessedInput();
                 this->ProcessKeyPressEventCallback(nextsequence);
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
     // Drawing related stuff needs to be here.
@@ -152,7 +155,15 @@ namespace DofM
     }
 
 
+    void GameLoop::Terminate()
+    {
+        this->IsRunning = false;
 
+        Term->Terminate();
+        this->MainEventThread->join();
+        this->DrawThread->join();
+        this->InputProcessThread->join();
+    }
 
     void GameLoop::Run()
     {
@@ -164,13 +175,12 @@ namespace DofM
 
         // exit after 10 sec
 
-        std::this_thread::sleep_for(std::chrono::seconds(60));
-        this->IsRunning = false;
-
-        Term->Terminate();
-        this->MainEventThread->join();
-        this->DrawThread->join();
-        this->InputProcessThread->join();
+        //std::this_thread::sleep_for(std::chrono::seconds(60));
+        while (this->IsRunning)
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+        this->Terminate();
 
     }
 }

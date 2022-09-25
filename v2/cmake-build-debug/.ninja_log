@@ -1,0 +1,21 @@
+# ninja log v5
+1584	2953	1664051570911776170	CMakeFiles/DungonsOfMorginarV2.dir/src/coremodels/locatedobject.cpp.o	3eece39d0f77630
+0	1608	1664051569561776169	CMakeFiles/DungonsOfMorginarV2.dir/src/objects/character.cpp.o	a21b24b3146083af
+1608	4414	1664051572361776170	CMakeFiles/DungonsOfMorginarV2.dir/src/iohandler.cpp.o	cf3d0c0c5b674aa4
+1446	1471	1664051569431776169	CMakeFiles/DungonsOfMorginarV2.dir/src/map/tile.cpp.o	e8cfdd34a0fb61ad
+0	1586	1664051569541776169	CMakeFiles/DungonsOfMorginarV2.dir/src/objects/mouse.cpp.o	dd22ccfca3e20bf2
+11	2707	1664146112589879255	CMakeFiles/DungonsOfMorginarV2.dir/src/core/nonblockingterminal.cpp.o	8105638adf011754
+2469	3662	1664051571621776170	CMakeFiles/DungonsOfMorginarV2.dir/src/coremodels/livingobject.cpp.o	dcb57992d6aa9f66
+11	925	1664146110819879254	CMakeFiles/DungonsOfMorginarV2.dir/src/tools.cpp.o	2671b7e679878fb9
+2440	2469	1664051570431776169	CMakeFiles/DungonsOfMorginarV2.dir/src/core/livingstats.cpp.o	70a79c3e74ca3c73
+0	2439	1664051570391776169	CMakeFiles/DungonsOfMorginarV2.dir/src/main.cpp.o	fa7a151a8a111240
+1611	2867	1664051570821776170	CMakeFiles/DungonsOfMorginarV2.dir/src/core/screenpos.cpp.o	c048857bb43fb93
+1471	4838	1664051572791776171	CMakeFiles/DungonsOfMorginarV2.dir/src/gameloop.cpp.o	e11b096b0d2b4b83
+0	1584	1664051569541776169	CMakeFiles/DungonsOfMorginarV2.dir/src/coremodels/dynamicobject.cpp.o	78213c19f3975a34
+0	1611	1664051569571776169	CMakeFiles/DungonsOfMorginarV2.dir/src/coremodels/location.cpp.o	9d48bd4f37b03401
+5132	5282	1664051573241776171	DungonsOfMorginarV2	ab8601e86c076d76
+1586	2066	1664051570021776169	CMakeFiles/DungonsOfMorginarV2.dir/src/map/mapregions.cpp.o	27906b7f24462c
+1	515	1664146784069879610	CMakeFiles/DungonsOfMorginarV2.dir/src/platform/linuxterminal.cpp.o	6fd6e170c9eab138
+0	1361	1664146784929879611	CMakeFiles/DungonsOfMorginarV2.dir/src/main.cpp.o	fa7a151a8a111240
+1	2443	1664146786009879611	CMakeFiles/DungonsOfMorginarV2.dir/src/gameloop.cpp.o	e11b096b0d2b4b83
+2444	2581	1664146786149879611	DungonsOfMorginarV2	bf9a7a0cdcd157c1

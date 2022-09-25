@@ -75,7 +75,6 @@ namespace DofM
 
     void WindowsTerminal::ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata)
     {
-        outdata->clear();
         if (GetNumberOfConsoleInputEvents(this->InHandle, &this->ReadBufferBytesAvailable) != 0)
         {
             DWORD readchars, i;

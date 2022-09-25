@@ -22,12 +22,10 @@
 #include "objects/mouse.hpp"
 #include "core/keycodes.hpp"
 #include "core/inputhandler.hpp"
-#if defined(WIN64)
+#ifdef __WIN64__
 #include "platform/windowsterminal.hpp"
-#elif defined(LINUX)
+#elif __linux__
 #include "platform/linuxterminal.hpp"
-#else
-#error "Unable to determine OS or current OS is not supported!"
 #endif
 
 namespace DofM
@@ -55,6 +53,7 @@ namespace DofM
         void ProcessKeyPressEventCallback(std::tuple<KeyCodes::KeyPress, std::vector<char>>);
         bool IsRunning = true;
         std::string KeyLog;
+        void Terminate();
     };
 }
 

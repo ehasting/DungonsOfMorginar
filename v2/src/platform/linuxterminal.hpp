@@ -6,17 +6,24 @@
 #define DUNGONSOFMORGINAR_LINUXTERMINAL_HPP
 #include "core/iterminal.hpp"
 #include <iostream>
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
+
 namespace DofM
 {
 
-    class LinuxTerminal : ITerminal
+    class LinuxTerminal : public ITerminal
     {
+    public:
+        LinuxTerminal() : ITerminal() {}
         ~LinuxTerminal() {
             tcsetattr(0, TCSANOW, &this->OriginalTerminalSettings);
         }
-        void ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata);
-        void SetupNonBlockingTerminal()
+        void ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata) override;
+        void SetupNonBlockingTerminal() override
         {
+            std::cout << "Setting up linux terminal" << std::endl;
             struct termios newsettings;
             tcgetattr(0, &this->OriginalTerminalSettings);
             newsettings = this->OriginalTerminalSettings;
@@ -32,7 +39,7 @@ namespace DofM
             std::cout << hidecursor;
         }
 
-        void ReadPlatformNativeTerminalSize(unsigned short &maxrow, unsigned short &maxcol)
+        void ReadPlatformNativeTerminalSize(unsigned short &maxrow, unsigned short &maxcol) override
         {
             struct winsize w;
             ioctl(0, TIOCGWINSZ, &w);
@@ -47,7 +54,7 @@ namespace DofM
             maxrow = w.ws_row;
             maxcol = w.ws_col;
         }
-        void ClearScreen()
+        void ClearScreen() override
         {
             const std::string clear("\033[2J\033[1;1H");
             std::cout << clear;

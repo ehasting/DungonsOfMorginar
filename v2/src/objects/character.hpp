@@ -4,9 +4,11 @@
 
 #ifndef DUNGONSOFMORGINAR_CHARACTER_H
 #define DUNGONSOFMORGINAR_CHARACTER_H
-#include "coremodels/locatedobject.hpp"
+#include "coremodels/dynamicobject.hpp"
 #include "coremodels/livingobject.hpp"
 #include "coremodels/location.hpp"
+
+
 namespace DofM
 {
     class Character : public LivingObject

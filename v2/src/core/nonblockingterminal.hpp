@@ -215,6 +215,7 @@ namespace DofM
             outdata->reserve(16);
             while (this->IsRunning)
             {
+                outdata->clear();
                 this->Terminal->ScanKeyboardInput(outdata);
                 if (!outdata->empty())
                 {

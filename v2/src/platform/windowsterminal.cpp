@@ -84,7 +84,9 @@ namespace DofM
                 {
                     for (i = 0; i < readchars; i++)
                     {
-                       outdata->push_back(this->ReadCharBuffer[i].Event.KeyEvent.uChar.AsciiChar);
+                        if (this->ReadCharBuffer[i].Event.KeyEvent.bKeyDown) {
+                            outdata->push_back(this->ReadCharBuffer[i].Event.KeyEvent.uChar.AsciiChar);
+                        }
                     }
                 }
             }

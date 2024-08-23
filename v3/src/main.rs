@@ -22,7 +22,7 @@ fn sleep(millis: u64) {
 }
 
 fn main() {
-    let processed_input_queue: VecDeque<char> = VecDeque::new();
+    let mut processed_input_queue: VecDeque<char> = VecDeque::new();
     println!("Hello, world!");
     let the_thread = thread::spawn(move || {
         let reader = io::stdin();
@@ -46,7 +46,7 @@ fn main() {
         {
             sleep(2000);
         }
-        println!(n);
+        println!("{}", n);
     }
     
 

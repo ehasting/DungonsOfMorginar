@@ -15,23 +15,23 @@ namespace DofM
     {
     public:
         inline static const std::string TypeName = "character";
-
-        Character(std::string name, Location loc)
-            : LivingObject(name, TypeName, loc)
+        std::string CurrentDescription;
+        Character(std::string name, Location::SLocation loc, DynamicObjectList dynobj)
+            : LivingObject(name, TypeName, loc, dynobj)
         {
         }
 
-        virtual bool Update(long tick)
+        virtual bool Update(long long int tick)
         {
             //std::cout << "Update from " << this->GetTypeName() << std::endl;
             //std::cout << fmt::format("Location: {}", this->ObjectLocation->GetMatchLocation()) << std::endl;
-            Stats.Stamina.Current--;
+            this->CurrentDescription = fmt::format("[{}] {} is having {} STAMINA and {} HP left (Loc: {})", this->TypeName, UniqueName, Stats.Stamina.GetCurrent(), Stats.Health.GetCurrent(), this->ObjectLocation->ToString());
             return true;
         };
 
         const std::string GetDescriptionLine()
         {
-            return fmt::format("[{}] {} is having {} STAMINA and {} HP left",this->TypeName, UniqueName, Stats.Stamina.Current, Stats.Health.Current);
+            return this->CurrentDescription;
         }
     };
 }

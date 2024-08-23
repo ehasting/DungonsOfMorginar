@@ -5,63 +5,97 @@
 #ifndef DUNGONSOFMORGINAR_LINUXTERMINAL_HPP
 #define DUNGONSOFMORGINAR_LINUXTERMINAL_HPP
 #include "core/iterminal.hpp"
+#include <utility>
 #include <iostream>
-#include <termios.h>
+#include <unordered_map>
+#include <string>
+#include <chrono>
 #include <sys/ioctl.h>
-#include <stdio.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include "core/DofM_TextRenderCache.h"
+
 
 namespace DofM
 {
 
     class LinuxTerminal : public ITerminal
     {
+
+
     public:
-        LinuxTerminal() : ITerminal() {}
-        ~LinuxTerminal() {
-            tcsetattr(0, TCSANOW, &this->OriginalTerminalSettings);
+        LinuxTerminal() : ITerminal()
+        {
+            SDL_Init(SDL_INIT_VIDEO);
+            std::cout << this->ScreenWidth << " x " << this->ScreenHeight <<std::endl;
+            SDL_CreateWindowAndRenderer(this->ScreenWidth, this->ScreenHeight, 0, &window, &renderer);
+            TTF_Init();
+            font = TTF_OpenFont("resources/dos.ttf", this->FontHeight);
         }
-        void ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata) override;
+        ~LinuxTerminal()
+        {
+            TTF_Quit();
+            SDL_DestroyWindow(window);
+            SDL_Quit();
+        }
+        void ScanKeyboardInput() override;
         void SetupNonBlockingTerminal() override
         {
-            std::cout << "Setting up linux terminal" << std::endl;
-            struct termios newsettings;
-            tcgetattr(0, &this->OriginalTerminalSettings);
-            newsettings = this->OriginalTerminalSettings;
-            newsettings.c_lflag &= ~ICANON;
-            newsettings.c_lflag &= ~ECHO;
-            newsettings.c_lflag &= ~ISIG;
-            newsettings.c_cc[VMIN] = 0;
-            newsettings.c_cc[VTIME] = 0;
-            tcsetattr(0, TCSANOW, &newsettings);
-            std::cout.setf(std::ios::unitbuf);
             this->ClearScreen();
-            const std::string hidecursor("\033[?25l");
-            std::cout << hidecursor;
         }
 
         void ReadPlatformNativeTerminalSize(unsigned short &maxrow, unsigned short &maxcol) override
         {
-            struct winsize w;
-            ioctl(0, TIOCGWINSZ, &w);
-            if (w.ws_row == 0 && w.ws_col == 0)
-            {
-                // we default if console reports bad dim (i.e. debug console etc)
-                //this->RowMax = 42;
-                //this->ColMax = 131;
-                //ischanged = true;
-                throw std::invalid_argument("This is not a compatible terminal, can't work with this.");
-            }
-            maxrow = w.ws_row;
-            maxcol = w.ws_col;
+            maxrow = this->ScreenHeight / this->FontHeight;
+            maxcol = this->ScreenWidth / this->FontWidth;
+            //std::cout << "Row: " << maxrow << " Col: " << maxcol << std::endl;
         }
         void ClearScreen() override
         {
-            const std::string clear("\033[2J\033[1;1H");
-            std::cout << clear;
+            SDL_SetRenderDrawColor(this->renderer, 0, 0, 0, 0);
+            SDL_RenderClear(this->renderer);
+        }
+        void UpdateScreen() override
+        {
+            SDL_RenderPresent(this->renderer);
+        }
+
+        void PrintText(int x, int y, std::string &text, SDL_Color fgcolor) override
+        {
+            int length = text.length();
+            if (length * FontWidth > this->ScreenWidth)
+            {
+                std::cout << "Error string: " << text << std::endl;
+                std::cout << "String length is " << length * FontWidth << " which is too long for max width on " << this->ScreenWidth << std::endl;
+                exit(1);
+            }
+            auto texture = RenderCache.GetTexture(text, this->font, this->renderer, fgcolor);
+            int offset = 0;
+            for (auto ctexture: texture)
+            {
+                SDL_Rect src = {0, 0, FontWidth * length, FontHeight};
+                SDL_Rect dest = {1 * FontWidth, 1 * FontHeight, FontWidth * length, FontHeight};
+                SDL_RenderCopy(crenderer, texture, &src, &dest);
+                offset++;
+            }
+        }
+        void PrintChar(int x, int y, char &text) override
+        {
+
         }
     private:
         char ReadCharBuffer[2];
-        struct termios OriginalTerminalSettings;
+        SDL_Window *window;
+        SDL_Renderer *renderer;
+        TTF_Font *font;
+
+        DofM_TextRenderCache RenderCache;
+
+        const unsigned short FontHeight = 16;
+        const unsigned short FontWidth = 9;
+        const unsigned short ScreenHeight = 720;
+        const unsigned short ScreenWidth = 1280;
+
     };
 
 } // DofM

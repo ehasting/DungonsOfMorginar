@@ -52,11 +52,7 @@ namespace DofM
         bool IsReady = false;
         bool IsRunning = true;
         bool IsInNonBlockingMode = false;
-        std::queue<char> InputQueue;
 
-        std::queue<std::tuple<KeyCodes::KeyPress, std::vector<char>>> ProcessedInputQueue;
-
-        std::mutex ProcessedInputMutex;
         std::mutex IOMutex;
         std::mutex DrawMutex;
 
@@ -85,31 +81,9 @@ namespace DofM
 
 
         std::map<std::string, std::string> LiveScreenBuffer;
-        std::string GetLiveScreenBufferLine(unsigned int bufferpos)
-        {
-            return this->GetLiveScreenBufferLine(this->GetScreenPosition(bufferpos));
-        }
-        std::string GetLiveScreenBufferLine(ScreenPos pos)
-        {
-            auto key = this->GetRenderingTableLookupKey(pos);
-            auto f = this->LiveScreenBuffer.find(key);
-            if (f != this->LiveScreenBuffer.end())
-            {
-                return this->LiveScreenBuffer[key];
-            }
-            return std::string();
-        }
-        void UpdateLiveScreenBufferLine(unsigned int bufferpos, std::string line)
-        {
-            this->UpdateLiveScreenBufferLine(this->GetScreenPosition(bufferpos), line);
-        }
-        void UpdateLiveScreenBufferLine(ScreenPos pos, std::string line)
-        {
-            auto key = this->GetRenderingTableLookupKey(pos);
-            this->LiveScreenBuffer[key] = line;
-        }
-        std::map<std::string, std::string> RenderingTable;
-        std::string GetRendringTableData(ScreenPos pos)
+
+        std::map<std::string, SDL_Color> RenderingTable;
+        SDL_Color GetRendringTableData(ScreenPos pos)
         {
             auto key = GetRenderingTableLookupKey(pos);
             auto f = this->RenderingTable.find(key);
@@ -117,16 +91,16 @@ namespace DofM
             {
                 return this->RenderingTable[key];
             }
-            return std::string();
+            return {255,255,255,255};
         }
-        std::string GetRendringTableData(unsigned int bufferpos)
+        SDL_Color GetRendringTableData(unsigned int bufferpos)
         {
             return this->GetRendringTableData(this->GetScreenPosition(bufferpos));
         }
 
         unsigned int GetBufferPosition(ScreenPos pos)
         {
-            unsigned int rval = ((pos.Row() * this->ColMax) + pos.Col()) - 1;
+            unsigned int rval = ((pos.Row() * this->ColMax) + pos.Col());
             if (rval > this->ScreenBufferLength)
             {
                 throw std::invalid_argument(fmt::format("GetBufferPosition out of bound: {}", rval));
@@ -139,13 +113,11 @@ namespace DofM
             unsigned int col = bufferposition - (row * this->ColMax);
 
             ScreenPos pos;
-            pos.SetRow(row+1);
-            pos.SetCol(col+1);
+            pos.SetRow(row);
+            pos.SetCol(col);
             return pos;
         }
-        std::string GotoXY(ScreenPos pos);
         unsigned int RedrawCounter = 0;
-        std::shared_ptr<std::thread> KeyboardEventThread;
 
     public:
         unsigned short int RowMax = USHRT_MAX;
@@ -155,94 +127,33 @@ namespace DofM
 
         void Redraw();
 
-        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, std::vector<TermRendringAttrs> &attrs );
+        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg );
         void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength);
-        bool HasProcessedInput()
-        {
-            this->ProcessedInputMutex.lock();
-            auto rval = this->ProcessedInputQueue.empty();
-            this->ProcessedInputMutex.unlock();
-            return !rval;
 
-        }
-        std::tuple<KeyCodes::KeyPress, std::vector<char>> GetNextProcessedInput()
-        {
 
-            if (this->HasProcessedInput())
-            {
-                this->ProcessedInputMutex.lock();
-                auto rval = this->ProcessedInputQueue.front();
-                this->ProcessedInputQueue.pop();
-                this->ProcessedInputMutex.unlock();
-                return rval;
-            }
-            throw std::invalid_argument("BUG: GetNextProcessedInput() requested on an empty queue, check with HasProcessedInput first.");
-        }
-
-        void AddProcessedInput(std::tuple<KeyCodes::KeyPress, std::vector<char>> data)
-        {
-            this->ProcessedInputMutex.lock();
-            this->ProcessedInputQueue.push(data);
-            this->ProcessedInputMutex.unlock();
-        }
         void CheckIfOnScreen(ScreenPos pos, unsigned int textlength)
         {
             if (pos.Col() > this->ColMax)
             {
-                std::string error = fmt::format("col out of bounds (max: {}, got: {}", this->ColMax, pos.Col());
+                std::string error = fmt::format("col out of bounds (max: {}, got: {})", this->ColMax, pos.Col());
                 std::cout << error << std::endl;
                 throw std::invalid_argument(error);
             }
             if (pos.Row() > this->RowMax)
             {
-                std::string error = fmt::format("row out of bounds (max: {}, got: {}", this->RowMax, pos.Row());
+                std::string error = fmt::format("row out of bounds (max: {}, got: {})", this->RowMax, pos.Row());
                 std::cout << error << std::endl;
                 throw std::invalid_argument(error);
             }
             if (pos.Col()+textlength > this->ColMax)
             {
-                std::string error = fmt::format("textlength out of bounds (max: {}, got: {}", this->ColMax, pos.Col()+textlength);
+                std::string error = fmt::format("textlength out of bounds (max: {}, got: {})", this->ColMax, pos.Col()+textlength);
                 std::cout << error << std::endl;
-                throw std::invalid_argument(error);
+                //throw std::invalid_argument(error);
             }
         }
 
 
-        void CheckForKeyboardEventWorker()
-        {
-            unsigned int iter = 1;
-            std::shared_ptr<std::vector<char> > outdata = std::make_shared<std::vector<char> >();
-            outdata->reserve(16);
-            while (this->IsRunning)
-            {
-                outdata->clear();
-                this->Terminal->ScanKeyboardInput(outdata);
-                if (!outdata->empty())
-                {
-                    this->IOMutex.lock();
-                    for ( auto &n : *outdata)
-                    {
-                        this->InputQueue.push(n);
-                    }
-                    this->IOMutex.unlock();
-                    this->ProcessKeyPressEventQueue();
-                }
-
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-                iter++;
-            }
-        }
-
-        void FillScreen()
-        {
-            for (int y = 1; y < this->RowMax+1; y++)
-            {
-                //this->WriteToBuffer(std::string(this->ColMax, '*'), ScreenPos(0, y));
-                this->WriteToBuffer(GetRenderingTableLookupKey(ScreenPos(1, y)), ScreenPos(1, y), 2);
-            }
-        }
         constexpr static std::string_view EmptyBuffer{};
     };
 }

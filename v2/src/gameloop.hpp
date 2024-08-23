@@ -22,6 +22,8 @@
 #include "objects/mouse.hpp"
 #include "core/keycodes.hpp"
 #include "core/inputhandler.hpp"
+#include "actionparser.hpp"
+#include "map/mapregions.hpp"
 #ifdef __WIN64__
 #include "platform/windowsterminal.hpp"
 #elif __linux__
@@ -33,9 +35,8 @@ namespace DofM
     class GameLoop
     {
     private:
-        std::vector<std::shared_ptr<DynamicObject> > DynamicObjects;
+        DynamicObject::DynamicObjectList DynamicObjects;
         std::shared_ptr<std::thread> MainEventThread;
-        std::shared_ptr<std::thread> DrawThread;
         std::shared_ptr<std::thread> InputProcessThread;
         DofM::Tools ToolsObject;
         std::shared_ptr<ITerminal> NativeTerminal;
@@ -44,16 +45,22 @@ namespace DofM
         void MainEventWorker();
         void DrawLoopWorker();
         void InputProcessorWorker();
+        ActionParser Parser;
 
 
     public:
         GameLoop();
         ~GameLoop();
         void Run();
-        void ProcessKeyPressEventCallback(std::tuple<KeyCodes::KeyPress, std::vector<char>>);
+        void ProcessKeyPressEventCallback(std::vector<SDL_Scancode> scancode);
+        void ProcessKeyTextCallback(std::string text);
         bool IsRunning = true;
         std::string KeyLog;
         void Terminate();
+        long long int TickCounter = 0;
+        std::shared_ptr<Character> Hero;
+        MapRegions::SMapRegions TestMap;
+
     };
 }
 

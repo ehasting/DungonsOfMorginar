@@ -16,8 +16,8 @@ namespace DofM
     public:
         ScreenPos()
         {
-            this->_row = 1;
-            this->_col = 1;
+            this->_row = 0;
+            this->_col = 0;
         }
 
         ScreenPos(unsigned int col, unsigned int row)
@@ -38,17 +38,18 @@ namespace DofM
 
         void SetRow(unsigned int row)
         {
-            if (row >= 1)
+            if (row >= 0)
             {
                 this->_row = row;
                 return;
             }
+            // we should check for screen max min instead
             throw std::invalid_argument(fmt::format("row out of bound: {}", row));
         }
 
         void SetCol(unsigned int col)
         {
-            if (col >= 1)
+            if (col >= 0)
             {
                 this->_col = col;
                 return;

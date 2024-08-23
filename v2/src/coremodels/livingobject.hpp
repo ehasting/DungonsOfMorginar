@@ -9,21 +9,114 @@
 #include "dynamicobject.hpp"
 #include "locatedobject.hpp"
 #include "core/livingstats.hpp"
+#include <cmath>
+
 namespace DofM
 {
     class LivingObject : public LocatedObject
     {
     public:
-        std::string UniqueName;
         LivingStats Stats;
         virtual const std::string GetDescriptionLine() = 0;
-    protected:
-        LivingObject(std::string name, std::string tname, Location location)
-            : LocatedObject(tname, location)
+        bool TryMoveNorth()
         {
-            this->UniqueName = name;
-            Stats.Stamina.Max = 100;
-            Stats.Stamina.Current = 100;
+            if (CanMove() && !this->ObjectMapRegion->IsAtNorthWall(ObjectLocation))
+            {
+                this->ObjectLocation->MoveNorth();
+                Stats.Stamina.RemoveStats();
+                return true;
+            }
+            return false;
+        }
+        bool TryMoveSouth()
+        {
+            if (CanMove() && !this->ObjectMapRegion->IsAtSouthWall(ObjectLocation))
+            {
+                this->ObjectLocation->MoveSouth();
+                Stats.Stamina.RemoveStats();
+                return true;
+            }
+            return false;
+        }
+        bool TryMoveEast()
+        {
+            if (CanMove() && !this->ObjectMapRegion->IsAtEastWall(ObjectLocation))
+            {
+                this->ObjectLocation->MoveEast();
+                Stats.Stamina.RemoveStats();
+                return true;
+            }
+            return false;
+        }
+        bool TryMoveWest()
+        {
+            if (CanMove() && !this->ObjectMapRegion->IsAtWestWall(ObjectLocation))
+            {
+                this->ObjectLocation->MoveWest();
+                Stats.Stamina.RemoveStats();
+                return true;
+            }
+            return false;
+        }
+        void RegainStamina(int staminatoget = 1)
+        {
+            Stats.Stamina.AddStats(staminatoget);
+        }
+        bool IsAlive()
+        {
+            return Stats.Health.GetCurrent() > 0;
+        }
+    protected:
+        LivingObject(std::string name, std::string tname, Location::SLocation location, DynamicObjectList dynobj)
+            : LocatedObject(name, tname, location, dynobj)
+        {
+            Stats.Stamina.SetStats(30, 30);
+            Stats.Health.SetStats(100,100);
+        }
+        virtual void Defence(int &dice, int &windice, int &damagereductionmin, int &damagereductionmax)
+        {
+            windice = 4;
+            dice = 6;
+            damagereductionmin = 1;
+            damagereductionmax = 4;
+        }
+
+
+        bool CanMove()
+        {
+            return Stats.Stamina.GetCurrent() > 0;
+        }
+
+        int DefenceCheck()
+        {
+            int dice, windice, damagereductionmin, damagereductionmax = 0;
+            this->Defence(dice,windice, damagereductionmin, damagereductionmax);
+            if (this->LocalToolsObject.Dice(dice) >= windice)
+            {
+                return this->LocalToolsObject.Dice(damagereductionmax, damagereductionmin); // damage reduction;
+            }
+            return 0;
+        }
+
+        virtual void Attack(int &dice, int &windice, int &attackmin, int &attackmax)
+        {
+            windice = 4;
+            dice = 6;
+            attackmin = 1;
+            attackmax = 4;
+        }
+        void AttackCheck(LivingObject &objectToAttack)
+        {
+            int dice, windice, attackmin, attackmax = 0;
+            this->Attack(dice,windice, attackmin, attackmax);
+            if (this->LocalToolsObject.Dice(dice) >= windice)
+            {
+                auto reduction = objectToAttack.DefenceCheck();
+                auto attackscore = this->LocalToolsObject.Dice(attackmax, attackmin);
+                if (reduction > attackscore)
+                    reduction = attackscore;
+                objectToAttack.Stats.Health.RemoveStats(attackscore - reduction);
+            }
         }
     };
 }

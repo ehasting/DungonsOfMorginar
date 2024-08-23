@@ -35,7 +35,12 @@ namespace DofM
 
         Tools();
         ~Tools();
+        int Dice(int max = 6, int min = 1)
+        {
+            std::uniform_int_distribution<> dis(min, max);
+            return dis(this->rng);
 
+        }
 
     private:
 

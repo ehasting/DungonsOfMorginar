@@ -7,16 +7,38 @@
 
 namespace DofM
 {
-    void LinuxTerminal::ScanKeyboardInput(std::shared_ptr<std::vector<char> > outdata)
+    void LinuxTerminal::ScanKeyboardInput()
     {
-        int l = EOF;
-        ReadCharBuffer[0] = EOF;
-        ReadCharBuffer[1] = EOF;
-        while (l = read(STDIN_FILENO, this->ReadCharBuffer, 1) > 0)
+        SDL_Event event;
+
+        // Events management
+        while (SDL_PollEvent(&event))
         {
-            outdata->push_back(this->ReadCharBuffer[0]);
-            ReadCharBuffer[0] = EOF;
-            ReadCharBuffer[1] = EOF;
+            switch (event.type)
+            {
+                case SDL_QUIT:
+                    this->Terminate();
+                    break;
+                case SDL_TEXTINPUT:
+                {
+                    std::string newtext(event.text.text);
+                    this->AddToTextBuffer(newtext);
+                }
+                    break;
+                case SDL_TEXTEDITING:
+                    /*
+                    Update the composition text.
+                    Update the cursor position.
+                    Update the selection length (if any).
+                    */
+                    //composition = event.edit.text;
+                    //cursor = event.edit.start;
+                    //selection_len = event.edit.length;
+                    break;
+                case SDL_KEYDOWN:
+                    this->AddEventToQueue(event.key.keysym.scancode);
+                    break;
+            }
         }
      
     }

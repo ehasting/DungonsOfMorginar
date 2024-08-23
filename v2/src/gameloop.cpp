@@ -165,11 +165,11 @@ namespace DofM
                     );
                     if (cc->IsAlive())
                     {
-                        Term->WriteToBuffer("X", pos, 1, {255, 128, 255, 255});
+                        Term->WriteToBuffer("X", pos, 1, {255, 255, 128, 255});
                     }
                     else
                     {
-                        Term->WriteToBuffer("*", pos, 1, {255, 128, 255, 255});
+                        Term->WriteToBuffer("*", pos, 1, {255, 128, 0, 255});
                     }
                 }
                 else if (n->GetTypeName() == Character::TypeName)

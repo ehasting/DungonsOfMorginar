@@ -12,6 +12,8 @@
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 
+#include "fmt/color.h"
+
 class DofM_TextRenderCache
 {
 private:
@@ -22,6 +24,7 @@ private:
         std::string BackendString;
         TTF_Font *fontcontext;
         SDL_Renderer *renderercontext;
+        SDL_Color color;
         bool FreeTextureOnDeconstruct = false;
 
     public:
@@ -37,7 +40,7 @@ private:
             obj.FreeTextureOnDeconstruct = false;
         }
 
-        RenderCacheObject(std::string &text, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
+        RenderCacheObject(const std::string &text, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
         {
             //std::cout << "Creating Texture cache object" << std::endl;
             this->BackendString = text;
@@ -47,6 +50,7 @@ private:
             SDL_Surface *text_surface = TTF_RenderText_Solid(this->fontcontext, this->BackendString.c_str(), fgcolor);
             this->Texture = SDL_CreateTextureFromSurface(this->renderercontext, text_surface);
             SDL_FreeSurface(text_surface);
+            this->color = fgcolor;
         }
         SDL_Texture* GetTexture()
         {
@@ -69,19 +73,24 @@ private:
         }
 
     };
-    void AddToCache(std::string text, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
+    void AddToCache(const std::string text, TTF_Font *font, SDL_Renderer *renderer, const SDL_Color fgcolor)
     {
-        RenderCache.emplace ( text, RenderCacheObject(text, font, renderer, fgcolor) );
+        RenderCache.emplace ( CreateKey(text,fgcolor), RenderCacheObject(text, font, renderer, fgcolor) );
+    }
+    std::string CreateKey(const std::string text, const SDL_Color fgcolor)
+    {
+        return fmt::format("{}{}{}{}_{}", fgcolor.r, fgcolor.g, fgcolor.b, fgcolor.a, text.c_str());
     }
 public:
     std::chrono::high_resolution_clock::time_point LastCacheRefresh = std::chrono::high_resolution_clock::now();
-    std::unordered_map<std::string, RenderCacheObject> RenderCache;
+    std::unordered_map< std::string, RenderCacheObject> RenderCache;
     const float TextureMaxAgeMs = 2.0f;
     std::vector<SDL_Texture*> GetTexture(std::string text, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
     {
         std::vector<SDL_Texture*> rval;
         std::chrono::duration<float> duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - this->LastCacheRefresh);
         //std::cout << "Debug: GetTexture is called "<< duration.count()<< std::endl;
+
         if (duration.count() > 10.0f)
         {
             std::vector<std::string> deletelist;
@@ -100,14 +109,16 @@ public:
             LastCacheRefresh = std::chrono::high_resolution_clock::now();
             //std::cout << "Removed " << deletelist.size() << " from texture cache" << std::endl;
         }
+
         for (auto &letter:text)
         {
-            if (RenderCache.find(std::string(1, letter)) == RenderCache.end())
+            auto lookupkey = CreateKey(std::string(1, letter), fgcolor);
+            if (RenderCache.find(lookupkey) == RenderCache.end())
             {
                 //std::cout << "Adding Texture cache" << std::endl;
-                AddToCache(text, font, renderer, fgcolor);
+                AddToCache(std::string(1, letter), font, renderer, fgcolor);
             }
-            rval.push_back(RenderCache.at(text).GetTexture());
+            rval.push_back(RenderCache.at(lookupkey).GetTexture());
         }
 
         return rval;

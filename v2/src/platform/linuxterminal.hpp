@@ -70,12 +70,13 @@ namespace DofM
                 exit(1);
             }
             auto texture = RenderCache.GetTexture(text, this->font, this->renderer, fgcolor);
+            std::cout << fmt::format("{}{}{}{}_{}", fgcolor.r, fgcolor.g, fgcolor.b, fgcolor.a, text.c_str()) << std::endl;
             int offset = 0;
             for (auto ctexture: texture)
             {
-                SDL_Rect src = {0, 0, FontWidth * length, FontHeight};
-                SDL_Rect dest = {1 * FontWidth, 1 * FontHeight, FontWidth * length, FontHeight};
-                SDL_RenderCopy(crenderer, texture, &src, &dest);
+                SDL_Rect src = {0, 0, FontWidth, FontHeight};
+                SDL_Rect dest = {(x +offset) * FontWidth, y * FontHeight, FontWidth, FontHeight};
+                SDL_RenderCopy(renderer, ctexture, &src, &dest);
                 offset++;
             }
         }

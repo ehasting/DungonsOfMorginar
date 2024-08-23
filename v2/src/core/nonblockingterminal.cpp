@@ -108,7 +108,7 @@ namespace DofM
             linecursor++;
             if (linecursor >= this->ColMax)
             {
-                this->Terminal->PrintTextCopy(1,row, outbuffer, formating);
+                this->Terminal->PrintTextCopy(0,row, outbuffer, formating);
                 outbuffer.clear();
                 linecursor = 0;
                 row++;

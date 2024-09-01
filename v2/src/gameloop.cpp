@@ -146,12 +146,13 @@ namespace DofM
             int rowoffset = 18;
             next_tick = SDL_GetTicks() + (1000 / 20);
 
-            Term->WriteToBuffer(fmt::format("{}", std::string(this->TestMap->Width(), '-')), ScreenPos(0,0), this->TestMap->Width());
+            Term->WriteToBuffer(fmt::format("Room: {}", this->TestMap->UniqueName), ScreenPos(0,0), Term->RowMax, {255,0,64,255});
+            Term->WriteToBuffer(fmt::format("{}", std::string(this->TestMap->Width(), '-')), ScreenPos(0,1), this->TestMap->Width());
             for(int x = 0; x < this->TestMap->Height(); x++)
             {
-                Term->WriteToBuffer(fmt::format("{}", std::string(this->TestMap->Width(), '-')), ScreenPos(0,x+1), this->TestMap->Width());
+                Term->WriteToBuffer(fmt::format("{}", std::string(this->TestMap->Width(), '-')), ScreenPos(0,x+2), this->TestMap->Width());
             }
-            Term->WriteToBuffer(fmt::format("{}", std::string(this->TestMap->Width(), '-')), ScreenPos(0,this->TestMap->Height()), this->TestMap->Width());
+            Term->WriteToBuffer(fmt::format("{}", std::string(this->TestMap->Width(), '-')), ScreenPos(0,this->TestMap->Height()+2), this->TestMap->Width());
 
             Term->WriteToBuffer(std::string(Term->ColMax,'_'), ScreenPos(0,16), Term->ColMax);
             for (auto n: *this->DynamicObjects)
@@ -165,7 +166,7 @@ namespace DofM
                     );
                     if (cc->IsAlive())
                     {
-                        Term->WriteToBuffer("X", pos, 1, {255, 255, 128, 255});
+                        Term->WriteToBuffer("X", pos, 1, {255, 0, 128, 255});
                     }
                     else
                     {
@@ -177,8 +178,6 @@ namespace DofM
                     auto cc = n->GetRealObject<Character>();
                     //Term->WriteToBuffer("0", cc->ObjectLocation->OffsetLocation(this->TestMap->StartLocation)->ReturnAsScreenPos(), 1);
                 }
-
-
 
                 Term->WriteToBuffer(n->GetDescriptionLine(),
                                    ScreenPos(2, rowoffset), Term->ColMax);

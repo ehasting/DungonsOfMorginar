@@ -18,28 +18,85 @@ namespace DofM
     class Mouse : public LivingObject
     {
     public:
+        typedef std::shared_ptr<Mouse> SMouse;
+        SMouse GetMouse()
+        {
+            return SMouse(this);
+        }
         inline static const std::string TypeName = "mouse";
-
+        enum MouseStates
+        {
+            FIGHTING,
+            MOVING,
+            RESTING,
+            DEAD
+        };
         Mouse(std::string name, Location::SLocation loc, DynamicObjectList dynobj)
                 : LivingObject(name, TypeName, loc, dynobj)
         {
+            SetState(MouseStates::MOVING);
         }
-
+        MouseStates State;
         int ReactEveryTick = 2;
         int MoveEveryTick = 2;
         std::string CurrentDescription = "";
 
-        virtual bool Update(long long int tick)
+        void SetState(MouseStates newstate)
         {
-            if (!this->IsAlive())
+            std::string stateword = "";
+            switch (newstate)
             {
-                this->CurrentDescription = fmt::format("[{}] {} is dead (Loc: {})", this->TypeName, UniqueName, Stats.Stamina.GetCurrent(), Stats.Health.GetCurrent(), this->ObjectLocation->ToString());
-                return true;
+                case FIGHTING:
+                    stateword = "FIGHTING";
+                    break;
+                case MOVING:
+                    stateword = "MOVING";
+                    break;
+                case RESTING:
+                    stateword = "RESTING";
+                    break;
+                case DEAD:
+                    stateword = "DEAD";
+                    break;
             }
+            fmt::print("Changing state to {} ({})\n", newstate, stateword);
+            State = newstate;
+        }
 
+        void RunISM(long long int tick)
+        {
+
+            switch (this->State)
+            {
+                case MouseStates::MOVING:
+                    Move(tick);
+                    if (this->Stats.Stamina.GetPrecentage() < 5)
+                    {
+                        SetState(MouseStates::RESTING);
+                    }
+                    break;
+                case MouseStates::RESTING:
+                    this->RegainStamina();
+                    if (this->Stats.Stamina.GetPrecentage() > 50)
+                    {
+                        SetState(MouseStates::MOVING);
+                    }
+                    break;
+                case MouseStates::FIGHTING:
+                    this->Fight(tick);
+                    break;
+                case MouseStates::DEAD:
+                    this->CurrentDescription = fmt::format("[{}] {} is dead (Loc: {})", this->TypeName, UniqueName, Stats.Stamina.GetCurrent(), Stats.Health.GetCurrent(), this->ObjectLocation->ToString());
+                    break;
+            }
+        }
+
+        void Move(long long int tick)
+        {
             bool HasMoved = false;
             if ((tick % MoveEveryTick) == 0)
             {
+
                 if (this->LocalToolsObject.Dice(6) > 4 && !this->ObjectMapRegion->IsAtNorthWall(this->ObjectLocation))
                 {
                     if (this->TryMoveNorth())
@@ -68,15 +125,57 @@ namespace DofM
                         HasMoved = true;
                     }
                 }
+            }
+        }
 
-                if (!HasMoved)
+        void CheckForFights(long long int tick)
+        {
+            for (auto &n:*this->DynamicObjects)
+            {
+                if (this->IsSameObject(*n))
                 {
-                    this->RegainStamina();
+                    continue;
+                }
+                auto tn = n->GetTypeName();
+                if (tn == Character::TypeName)
+                {
+
+                }
+                else if (tn == Mouse::TypeName)
+                {
+
                 }
             }
+        }
 
-            if ((tick % ReactEveryTick) == 0)
+        void CheckForFoesNairby(long long int tick)
+        {
+            this->UpdateLivingObjectsInRange();
+            for (auto &n:*this->DynamicObjects)
             {
+                if (this->IsSameObject(*n))
+                {
+                    continue;
+                }
+                auto tn = n->GetTypeName();
+                if (tn == Character::TypeName)
+                {
+
+                }
+                else if (tn == Mouse::TypeName)
+                {
+                    auto currenttarget = std::dynamic_pointer_cast<Mouse>(n);
+                    if (this->ObjectLocation->ToString() == currenttarget->ObjectLocation->ToString())
+                    {
+                        fmt::print("Same location?!  {} {} \n", this->UniqueName, currenttarget->UniqueName);
+                    }
+                    this->UpsertLivingObjectIfInRange(currenttarget);
+                }
+            }
+        }
+
+        void Fight(long long int tick)
+        {
                 //this->CurrentDescription = fmt::format("Looking for someone to attack (tick: {})", tick);
                 for (auto &n:*this->DynamicObjects)
                 {
@@ -98,7 +197,8 @@ namespace DofM
                     }
                     else if (n->GetTypeName() == Mouse::TypeName)
                     {
-                        auto currenttarget = n->GetRealObject<Mouse>();
+                        auto currenttarget = std::dynamic_pointer_cast<Mouse>(n);
+                        //auto currenttarget = n->GetRealObject<Mouse>();
                         if (!currenttarget->IsAlive())
                         {
                             // Its dead, so no point of updating it
@@ -114,12 +214,20 @@ namespace DofM
                         }
                     }
                 }
+
+        }
+
+        virtual bool Update(long long int tick)
+        {
+            CheckForFoesNairby(tick);
+            if ((tick % ReactEveryTick) == 0)
+            {
+                RunISM(tick);
             }
             else
             {
                 this->CurrentDescription = fmt::format("[{}] {}  {} / {} (HP / ST) (Loc: {})", this->TypeName, UniqueName, Stats.Health.GetCurrent(), Stats.Stamina.GetCurrent(), this->ObjectLocation->ToString());
             }
-
             return true;
         };
 

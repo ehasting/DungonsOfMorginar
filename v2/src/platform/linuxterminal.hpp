@@ -60,25 +60,20 @@ namespace DofM
             SDL_RenderPresent(this->renderer);
         }
 
-        void PrintText(int x, int y, std::string &text, SDL_Color fgcolor) override
+        void PrintLetter(int x, int y, Uint32 letter, SDL_Color fgcolor) override
         {
-            int length = text.length();
-            if (length * FontWidth > this->ScreenWidth)
+            if (y * FontWidth > this->ScreenWidth)
             {
-                std::cout << "Error string: " << text << std::endl;
-                std::cout << "String length is " << length * FontWidth << " which is too long for max width on " << this->ScreenWidth << std::endl;
+                std::cout << fmt::format("Error letter on (x / y): {} / {} = {} ", x, y, letter) << std::endl;
+                std::cout << fmt::format("String length is {} which is too long for max width on {}", y * FontWidth, this->ScreenWidth) << std::endl;
                 exit(1);
             }
-            auto texture = RenderCache.GetTexture(text, this->font, this->renderer, fgcolor);
-            std::cout << fmt::format("{}{}{}{}_{}", fgcolor.r, fgcolor.g, fgcolor.b, fgcolor.a, text.c_str()) << std::endl;
-            int offset = 0;
-            for (auto ctexture: texture)
-            {
-                SDL_Rect src = {0, 0, FontWidth, FontHeight};
-                SDL_Rect dest = {(x +offset) * FontWidth, y * FontHeight, FontWidth, FontHeight};
-                SDL_RenderCopy(renderer, ctexture, &src, &dest);
-                offset++;
-            }
+            auto texture = RenderCache.GetTexture(letter, this->font, this->renderer, fgcolor);
+            //std::cout << fmt::format("{}{}{}{}_{}", fgcolor.r, fgcolor.g, fgcolor.b, fgcolor.a, text.c_str()) << std::endl;
+
+            SDL_Rect src = {0, 0, FontWidth, FontHeight};
+            SDL_Rect dest = {x  * FontWidth, y * FontHeight, FontWidth, FontHeight};
+            SDL_RenderCopy(renderer, texture, &src, &dest);
         }
         void PrintChar(int x, int y, char &text) override
         {

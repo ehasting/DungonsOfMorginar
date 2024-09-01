@@ -16,7 +16,8 @@ namespace DofM
     class DynamicObject
     {
     public:
-        typedef std::shared_ptr<std::vector<std::shared_ptr<DynamicObject> > > DynamicObjectList;
+        typedef std::shared_ptr<DynamicObject> SDynamicObject;
+        typedef std::shared_ptr<std::vector< SDynamicObject> > DynamicObjectList;
         inline static const std::string_view TypeName = "dynamicobject";
         //const std::string_view TypeName = "dynamicobject";
         std::string UniqueName;
@@ -29,6 +30,12 @@ namespace DofM
                                                         this->GetTypeName(), T::TypeName));
             }
             return dynamic_cast<T *>(this);
+            //return std::dynamic_pointer_cast<T>(std::make_shared<T>(this));
+        }
+
+        SDynamicObject GetDynamicObject()
+        {
+            return std::shared_ptr<DynamicObject>(this);
             //return std::dynamic_pointer_cast<T>(std::make_shared<T>(this));
         }
 

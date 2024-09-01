@@ -23,16 +23,13 @@ namespace DofM
     void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength)
     {
         std::vector<TermRendringAttrs> emptyattr;
-        this->WriteToBuffer(text, pos, maxtextlength, {1,1,1,1});
+        this->WriteToBuffer(text, pos, maxtextlength, White);
     }
     void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg)
     {
         if (!this->IsReady)
             return;
         this->DrawMutex.lock();
-
-        auto startkey = this->GetRenderingTableLookupKey(pos);
-        this->RenderingTable[startkey] = fg;
 
         this->CheckIfOnScreen(pos, text.length());
 
@@ -43,9 +40,11 @@ namespace DofM
         for (unsigned int x = cleanbufferstartindex; x < cleanbufferstartindex+maxtextlength; x++)
         {
             this->ScreenBuffer[x] = ' ';
+            this->ScreenBufferColor[x] = White;
         }
         for (auto c : text)
         {
+            this->ScreenBufferColor[bufferstartindex] = fg;
             this->ScreenBuffer[bufferstartindex] = c;
             bufferstartindex++;
         }
@@ -100,20 +99,19 @@ namespace DofM
         unsigned int row = 1;
         unsigned int linecursor = 0;
         unsigned int buffercursor = 0;
-        SDL_Color formating;
         for (char &c : this->ScreenBuffer)
         {
-            formating = GetRendringTableData(buffercursor);
+            auto formating = this->ScreenBufferColor[buffercursor];
             outbuffer += c;
             linecursor++;
             if (linecursor >= this->ColMax)
             {
-                this->Terminal->PrintTextCopy(0,row, outbuffer, formating);
+
                 outbuffer.clear();
                 linecursor = 0;
                 row++;
             }
-
+            this->Terminal->PrintLetter(linecursor,row, c, formating);
             buffercursor++;
              //outbuffer += '\n';
         }

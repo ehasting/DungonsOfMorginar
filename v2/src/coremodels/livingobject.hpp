@@ -16,11 +16,58 @@ namespace DofM
     class LivingObject : public LocatedObject
     {
     public:
+        typedef std::shared_ptr<LivingObject> SLivingObject;
         LivingStats Stats;
         virtual const std::string GetDescriptionLine() = 0;
+        std::vector<SLivingObject> LivingObjectsInRange;
+        SLivingObject GetLivingObject()
+        {
+            return SLivingObject(this);
+        }
+        void UpsertLivingObjectIfInRange(SLivingObject objectToCheck)
+        {
+            if (this->ObjectLocation->IsBeside(objectToCheck->ObjectLocation))
+            {
+                if(std::find(this->LivingObjectsInRange.begin(), this->LivingObjectsInRange.end(), objectToCheck)
+                    == this->LivingObjectsInRange.end())
+                {
+                    this->LivingObjectsInRange.push_back(objectToCheck);
+                }
+            }
+        }
+
+        void UpdateLivingObjectsInRange()
+        {
+            std::vector<SLivingObject> newlist;
+            for (auto &obj : LivingObjectsInRange)
+            {
+                if (obj->ObjectLocation->IsBeside(this->ObjectLocation))
+                {
+                    newlist.push_back(obj);
+                }
+                else if (obj->ObjectLocation->IsOntop(this->ObjectLocation))
+                {
+                    newlist.push_back(obj);
+                }
+            }
+            this->LivingObjectsInRange.clear();
+            this->LivingObjectsInRange = newlist;
+        }
+
+        bool IsLocationEmpty(Location::SLocation futurelocation)
+        {
+            for (auto &obj : LivingObjectsInRange)
+            {
+                if (obj->ObjectLocation == futurelocation)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         bool TryMoveNorth()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtNorthWall(ObjectLocation))
+            if (CanMove() && !this->ObjectMapRegion->IsAtNorthWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(0,1,0)))
             {
                 this->ObjectLocation->MoveNorth();
                 Stats.Stamina.RemoveStats();
@@ -30,7 +77,7 @@ namespace DofM
         }
         bool TryMoveSouth()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtSouthWall(ObjectLocation))
+            if (CanMove() && !this->ObjectMapRegion->IsAtSouthWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(0,-1,0)))
             {
                 this->ObjectLocation->MoveSouth();
                 Stats.Stamina.RemoveStats();
@@ -40,7 +87,7 @@ namespace DofM
         }
         bool TryMoveEast()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtEastWall(ObjectLocation))
+            if (CanMove() && !this->ObjectMapRegion->IsAtEastWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(1,0,0)))
             {
                 this->ObjectLocation->MoveEast();
                 Stats.Stamina.RemoveStats();
@@ -50,7 +97,7 @@ namespace DofM
         }
         bool TryMoveWest()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtWestWall(ObjectLocation))
+            if (CanMove() && !this->ObjectMapRegion->IsAtWestWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(-1,0,0)))
             {
                 this->ObjectLocation->MoveWest();
                 Stats.Stamina.RemoveStats();

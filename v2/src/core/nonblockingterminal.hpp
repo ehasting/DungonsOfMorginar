@@ -48,6 +48,7 @@ namespace DofM
         {
             this->IsRunning = false;
         }
+        const SDL_Color White = {255,255,255,255};
     protected:
         bool IsReady = false;
         bool IsRunning = true;
@@ -59,20 +60,24 @@ namespace DofM
         std::shared_ptr<ITerminal> Terminal;
 
         void ProcessKeyPressEventQueue();
-        std::string GetRenderingTableLookupKey(ScreenPos pos)
-        {
-            return std::to_string(pos.Col()) + "_" + std::to_string(pos.Row());
-        }
+
         unsigned int ScreenBufferLength;
         std::vector<char> ScreenBuffer;
+        std::vector<SDL_Color> ScreenBufferColor;
         void ResizeScreenBuffer()
         {
             this->DrawMutex.lock();
             this->LiveScreenBuffer.clear();
             this->ScreenBufferLength = this->RowMax * this->ColMax;
+
             this->ScreenBuffer.clear();
             this->ScreenBuffer.resize(this->ScreenBufferLength);
             std::fill(this->ScreenBuffer.begin(), this->ScreenBuffer.end(), ' ');
+
+            this->ScreenBufferColor.clear();
+            this->ScreenBufferColor.resize(this->ScreenBufferLength);
+            SDL_Color white = {255,255,255,255};
+            std::fill(this->ScreenBufferColor.begin(), this->ScreenBufferColor.end(), white);
             this->DrawMutex.unlock();
         }
 
@@ -82,21 +87,6 @@ namespace DofM
 
         std::map<std::string, std::string> LiveScreenBuffer;
 
-        std::map<std::string, SDL_Color> RenderingTable;
-        SDL_Color GetRendringTableData(ScreenPos pos)
-        {
-            auto key = GetRenderingTableLookupKey(pos);
-            auto f = this->RenderingTable.find(key);
-            if (f != this->RenderingTable.end())
-            {
-                return this->RenderingTable[key];
-            }
-            return {255,255,255,255};
-        }
-        SDL_Color GetRendringTableData(unsigned int bufferpos)
-        {
-            return this->GetRendringTableData(this->GetScreenPosition(bufferpos));
-        }
 
         unsigned int GetBufferPosition(ScreenPos pos)
         {
@@ -135,20 +125,17 @@ namespace DofM
         {
             if (pos.Col() > this->ColMax)
             {
-                std::string error = fmt::format("col out of bounds (max: {}, got: {})", this->ColMax, pos.Col());
-                std::cout << error << std::endl;
-                throw std::invalid_argument(error);
+                fmt::print("col out of bounds (max: {}, got: {})", this->ColMax, pos.Col());
+                throw std::invalid_argument("See last printout");
             }
             if (pos.Row() > this->RowMax)
             {
-                std::string error = fmt::format("row out of bounds (max: {}, got: {})", this->RowMax, pos.Row());
-                std::cout << error << std::endl;
-                throw std::invalid_argument(error);
+                fmt::print("row out of bounds (max: {}, got: {})", this->RowMax, pos.Row());
+                throw std::invalid_argument("See last printout");
             }
             if (pos.Col()+textlength > this->ColMax)
             {
-                std::string error = fmt::format("textlength out of bounds (max: {}, got: {})", this->ColMax, pos.Col()+textlength);
-                std::cout << error << std::endl;
+                fmt::print("textlength out of bounds (max: {}, got: {})", this->ColMax, pos.Col()+textlength);
                 //throw std::invalid_argument(error);
             }
         }

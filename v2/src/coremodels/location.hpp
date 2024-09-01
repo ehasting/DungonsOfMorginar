@@ -97,12 +97,12 @@ namespace DofM
             return fmt::format("{}{}{}", this->X, this->Y, this->Z);
         }
 
-        SLocation OffsetLocation(SLocation StartOffsetLocation)
+        SLocation OffsetLocation(unsigned long x, unsigned long y, unsigned long z)
         {
             return std::make_shared<Location>(
-                    this->X - (StartOffsetLocation->X-1),
-                    this->Y - (StartOffsetLocation->Y-1),
-                    this->Z - (StartOffsetLocation->Z-1)
+                    this->X + x,
+                    this->Y + y,
+                    this->Z + z
             );
         }
 

@@ -19,9 +19,15 @@ namespace DofM
         }
 
     public:
+        typedef std::shared_ptr<LocatedObject> SLocatedObject;
         virtual const std::string GetDescriptionLine() = 0;
         Location::SLocation ObjectLocation;
         MapRegions::SMapRegions ObjectMapRegion;
+        SDynamicObject GetLocatedObject()
+        {
+            return SLocatedObject(this);
+            //return std::dynamic_pointer_cast<T>(std::make_shared<T>(this));
+        }
         void SetMap(MapRegions::SMapRegions map)
         {
             this->ObjectMapRegion = map;

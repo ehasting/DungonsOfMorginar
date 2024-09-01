@@ -53,6 +53,10 @@ namespace DofM
             {
                 return Max;
             }
+            unsigned long GetPrecentage()
+            {
+                return ((100.0f/Max) * Current);
+            }
         };
 
         StatNumber Stamina;

@@ -23,12 +23,7 @@ namespace DofM
         virtual void UpdateScreen() = 0;
         virtual void ScanKeyboardInput() = 0;
         virtual void ReadPlatformNativeTerminalSize(unsigned short &maxrow, unsigned short &maxcol) = 0;
-        virtual void PrintText(int x, int y, std::string &text, SDL_Color fgcolor) = 0;
-        virtual void PrintTextCopy(int x, int y, std::string text, SDL_Color fgcolor)
-        {
-            std::string tmp = text;
-            this->PrintText(x, y, tmp, fgcolor);
-        };
+        virtual void PrintLetter(int x, int y, Uint32 text, SDL_Color fgcolor) = 0;
         virtual void PrintChar(int x, int y, char &text) = 0;
         bool IsTerminated = false;
         virtual void Terminate()

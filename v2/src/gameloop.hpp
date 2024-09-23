@@ -28,6 +28,8 @@
 #include "platform/windowsterminal.hpp"
 #elif __linux__
 #include "platform/linuxterminal.hpp"
+#elif __HAIKU__
+#include "platform/linuxterminal.hpp"
 #endif
 
 namespace DofM

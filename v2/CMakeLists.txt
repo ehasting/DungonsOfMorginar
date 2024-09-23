@@ -45,7 +45,14 @@ message("-- Adding ${CMAKE_SYSTEM_NAME} related headers")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(PLATFORM_HEADER_FILES
-            src/platform/linuxterminal.cpp src/platform/linuxterminal.hpp)
+            src/platform/linuxterminal.cpp src/platform/linuxterminal.hpp
+			src/core/DofM_TextRenderCache.cpp
+            src/core/DofM_TextRenderCache.h)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
+    set(PLATFORM_HEADER_FILES
+            src/platform/linuxterminal.cpp src/platform/linuxterminal.hpp
+			src/core/DofM_TextRenderCache.cpp
+            src/core/DofM_TextRenderCache.h)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     set(PLATFORM_HEADER_FILES
             src/platform/windowsterminal.cpp src/platform/windowsterminal.hpp

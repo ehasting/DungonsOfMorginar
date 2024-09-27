@@ -75,7 +75,7 @@ namespace DofM
             switch (sc)
             {
                 case SDL_SCANCODE_UP:
-                    //this->Term->WriteToBuffer(fmt::format("[BUFFER]: UP"), ScreenPos(4, 5), 16);
+                    this->Term->WriteToBuffer(fmt::format("[BUFFER]: UP"), ScreenPos(4, 5), 16);
                     this->Hero->TryMoveNorth();
                     break;
                 case SDL_SCANCODE_DOWN:
@@ -183,7 +183,7 @@ namespace DofM
                                    ScreenPos(2, rowoffset), Term->ColMax);
                 rowoffset++;
             }
-            //Term->WriteToBuffer("Test buffer: " + this->KeyLog, ScreenPos(7, rowoffset+1), 32);
+            Term->WriteToBuffer("Test buffer: " + this->KeyLog, ScreenPos(7, rowoffset+1), 32);
             Term->Redraw();
             sleep_ticks = next_tick - SDL_GetTicks();
             if (sleep_ticks > 0)

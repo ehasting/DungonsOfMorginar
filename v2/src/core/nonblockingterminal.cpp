@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <thread>
+#include "utf8.h"
 namespace DofM
 {
     NonBlockingTerminal::NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype)
@@ -39,15 +40,28 @@ namespace DofM
         // should be one for loop
         for (unsigned int x = cleanbufferstartindex; x < cleanbufferstartindex+maxtextlength; x++)
         {
-            this->ScreenBuffer[x] = ' ';
+            this->ScreenBuffer[x] = " ";
             this->ScreenBufferColor[x] = White;
         }
-        for (auto c : text)
+
+        char* str = (char*)text.c_str();
+        char* str_i = str;                  // string iterator
+        char* end = str+strlen(str)+1;      // end iterator
+        do
         {
+            uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
+            if (code == 0)
+                continue;
+
+            char symbol[5] = {0};
+            utf8::append(code, symbol); // copy code to symbol
+            std::string newchar(symbol);
             this->ScreenBufferColor[bufferstartindex] = fg;
-            this->ScreenBuffer[bufferstartindex] = c;
+            this->ScreenBuffer[bufferstartindex] = newchar;
             bufferstartindex++;
         }
+        while ( str_i < end );
+
         this->DrawMutex.unlock();
     }
 
@@ -96,10 +110,10 @@ namespace DofM
         this->Terminal->ClearScreen();
         std::string outbuffer;
 
-        unsigned int row = 1;
-        unsigned int linecursor = 0;
+        unsigned int row = 0;
+        unsigned int linecursor = -1; // because we increase before print - we need to start on -1
         unsigned int buffercursor = 0;
-        for (char &c : this->ScreenBuffer)
+        for (auto &c : this->ScreenBuffer)
         {
             auto formating = this->ScreenBufferColor[buffercursor];
             outbuffer += c;
@@ -111,7 +125,7 @@ namespace DofM
                 linecursor = 0;
                 row++;
             }
-            this->Terminal->PrintLetter(linecursor,row, c, formating);
+            this->Terminal->PrintLetter(linecursor, row, c, formating);
             buffercursor++;
              //outbuffer += '\n';
         }

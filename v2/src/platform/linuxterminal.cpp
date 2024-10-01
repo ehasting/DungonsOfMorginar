@@ -21,7 +21,8 @@ namespace DofM
                     break;
                 case SDL_TEXTINPUT:
                 {
-                    std::string newtext(event.text.text);
+                    std::string t(event.text.text);
+                    std::string newtext(t.begin(), t.end());
                     this->AddToTextBuffer(newtext);
                 }
                     break;

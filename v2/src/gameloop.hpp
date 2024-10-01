@@ -24,6 +24,7 @@
 #include "core/inputhandler.hpp"
 #include "actionparser.hpp"
 #include "map/mapregions.hpp"
+#include "systems/namingsystem.hpp"
 #ifdef __WIN64__
 #include "platform/windowsterminal.hpp"
 #elif __linux__
@@ -48,6 +49,7 @@ namespace DofM
         void DrawLoopWorker();
         void InputProcessorWorker();
         ActionParser Parser;
+        DofM::NamingSystem Names;
 
 
     public:

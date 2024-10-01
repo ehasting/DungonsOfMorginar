@@ -10,9 +10,7 @@
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <iostream>
-
-#include "fmt/color.h"
+#include "fmt/xchar.h"
 
 class DofM_TextRenderCache
 {
@@ -21,7 +19,7 @@ private:
     {
     private:
         SDL_Texture *Texture;
-        Uint32 BackendChar;
+        std::string BackendChar;
         TTF_Font *fontcontext;
         SDL_Renderer *renderercontext;
         SDL_Color color;
@@ -40,14 +38,14 @@ private:
             obj.FreeTextureOnDeconstruct = false;
         }
 
-        RenderCacheObject(const Uint32 letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
+        RenderCacheObject(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
         {
             //std::cout << "Creating Texture cache object" << std::endl;
             this->BackendChar = letter;
             this->fontcontext = font;
             this->renderercontext = renderer;
             //std::cout << "Creating Texture cache object" << std::endl;
-            SDL_Surface *text_surface = TTF_RenderGlyph32_Solid(this->fontcontext, this->BackendChar, fgcolor);
+            SDL_Surface *text_surface = TTF_RenderUTF8_Blended(this->fontcontext, this->BackendChar.c_str(), fgcolor);
             this->Texture = SDL_CreateTextureFromSurface(this->renderercontext, text_surface);
             SDL_FreeSurface(text_surface);
             this->color = fgcolor;
@@ -73,11 +71,11 @@ private:
         }
 
     };
-    void AddToCache(const Uint32 letter, TTF_Font *font, SDL_Renderer *renderer, const SDL_Color fgcolor)
+    void AddToCache(const std::string letter, TTF_Font *font, SDL_Renderer *renderer, const SDL_Color fgcolor)
     {
         RenderCache.emplace ( CreateKey(letter,fgcolor), RenderCacheObject(letter, font, renderer, fgcolor) );
     }
-    std::string CreateKey(const Uint32 letter, const SDL_Color fgcolor)
+    std::string CreateKey(const std::string letter, const SDL_Color fgcolor)
     {
         return fmt::format("{}{}{}{}_{}", fgcolor.r, fgcolor.g, fgcolor.b, fgcolor.a, letter);
     }
@@ -85,7 +83,7 @@ public:
     std::chrono::high_resolution_clock::time_point LastCacheRefresh = std::chrono::high_resolution_clock::now();
     std::unordered_map< std::string, RenderCacheObject> RenderCache;
     const float TextureMaxAgeMs = 2.0f;
-    SDL_Texture* GetTexture(Uint32 letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
+    SDL_Texture* GetTexture(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
     {
         SDL_Texture* rval;
         std::chrono::duration<float> duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - this->LastCacheRefresh);

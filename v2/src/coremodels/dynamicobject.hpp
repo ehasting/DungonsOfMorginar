@@ -21,13 +21,15 @@ namespace DofM
         inline static const std::string_view TypeName = "dynamicobject";
         //const std::string_view TypeName = "dynamicobject";
         std::string UniqueName;
+        long UniqueNameHash;
         template<class T>
         T *GetRealObject()
         {
             if (T::TypeName != this->GetTypeName())
             {
-                throw std::invalid_argument(fmt::format("Trying to cast to wrong type! I am: {}, trying to cast to: {}",
-                                                        this->GetTypeName(), T::TypeName));
+                std::string error = "Trying to cast to wrong type! I am: " + this->GetTypeName() + ", trying to cast to: " + T::TypeName;
+                std::string str( error.begin(), error.end() );
+                throw std::invalid_argument(str);
             }
             return dynamic_cast<T *>(this);
             //return std::dynamic_pointer_cast<T>(std::make_shared<T>(this));

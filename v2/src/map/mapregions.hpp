@@ -7,10 +7,13 @@
 #include <string_view>
 #include <iostream>
 #include "coremodels/location.hpp"
+#include "core/nonblockingterminal.hpp"
+#include "tools.hpp"
 namespace DofM
 {
     class MapRegions
     {
+        DofM::Tools ToolsObject;
     public:
         typedef std::shared_ptr<MapRegions> SMapRegions;
         std::string UniqueName;
@@ -82,27 +85,19 @@ namespace DofM
             return std::make_shared<Location>(X,Y,Z);
         }
 
-
-        constexpr static std::string_view Region1 {
-                            "********"
-                            "***  ***"
-                            "**   ***"
-                            "**   ***"
-                            "**   ***"
-                            "****  **"
-                            "*****   "
-                            "********"};
-        void DrawRegion(std::string_view tile)
+        void DrawMap(std::shared_ptr<NonBlockingTerminal> term, ScreenPos drawstart)
         {
-            for (int x = 0; x < tile.size(); x++)
+
+            term->WriteToBuffer(fmt::format("Room: {}", this->UniqueName), ScreenPos(0,0).AddOffset(drawstart), term->RowMax, {255,0,64,255});
+            term->WriteToBuffer(ToolsObject.RepeateString("█", this->Width()+1), ScreenPos(0,1).AddOffset(drawstart), this->Width()+1);
+            for(int x = 0; x < this-> Height()-1; x++)
             {
-                std::cout << tile[x];
-                if (x != 0)
-                {
-                    if ((x % 8) == 0)
-                        std::cout << std::endl;
-                }
+                //term->WriteToBuffer("█", ScreenPos(0,x+2).AddOffset(drawstart), 1); // left
+                term->WriteToBuffer(fmt::format("█{}█", std::string(this->Width()-1, '-')), ScreenPos(0,x+2).AddOffset(drawstart), this->Width()+1);
+
+                //term->WriteToBuffer("█", ScreenPos(this-> Width(),x+2).AddOffset(drawstart), 1); // right
             }
+            term->WriteToBuffer(ToolsObject.RepeateString("█", this-> Width()+1), ScreenPos(0,this->Height()+1).AddOffset(drawstart), this->Width()+1);
         }
 
     };

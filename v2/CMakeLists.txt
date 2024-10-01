@@ -21,7 +21,8 @@ include_directories(DungonsOfMorginar  ${SDL2_INCLUDE_DIRS})
 
 find_package(Threads REQUIRED)
 add_subdirectory(fmt-8.1.0 EXCLUDE_FROM_ALL)
-include_directories ("${PROJECT_SOURCE_DIR}/src")
+include_directories("${PROJECT_SOURCE_DIR}/src/utf8")
+include_directories("${PROJECT_SOURCE_DIR}/src")
 
 set(HEADER_FILES
         src/tools.hpp src/tools.cpp
@@ -47,17 +48,17 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(PLATFORM_HEADER_FILES
             src/platform/linuxterminal.cpp src/platform/linuxterminal.hpp
 			src/core/DofM_TextRenderCache.cpp
-            src/core/DofM_TextRenderCache.h)
+                        src/core/DofM_TextRenderCache.hpp)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
     set(PLATFORM_HEADER_FILES
             src/platform/linuxterminal.cpp src/platform/linuxterminal.hpp
 			src/core/DofM_TextRenderCache.cpp
-            src/core/DofM_TextRenderCache.h)
+                        src/core/DofM_TextRenderCache.hpp)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     set(PLATFORM_HEADER_FILES
             src/platform/windowsterminal.cpp src/platform/windowsterminal.hpp
             src/core/DofM_TextRenderCache.cpp
-            src/core/DofM_TextRenderCache.h)
+            src/core/DofM_TextRenderCache.hpp)
 endif()
 
 add_custom_target(copy_assets
@@ -65,7 +66,8 @@ add_custom_target(copy_assets
 )
 
 
-add_executable(DungonsOfMorginarV2 src/main.cpp ${HEADER_FILES} ${PLATFORM_HEADER_FILES})
+add_executable(DungonsOfMorginarV2 src/main.cpp ${HEADER_FILES} ${PLATFORM_HEADER_FILES}
+    src/systems/namingsystem.cpp src/systems/namingsystem.hpp)
 target_link_libraries(DungonsOfMorginarV2 ${CMAKE_THREAD_LIBS_INIT} fmt::fmt-header-only)
 target_link_libraries(DungonsOfMorginarV2 ${SDL2_LIBRARIES} SDL2_ttf::SDL2_ttf)
 target_include_directories(DungonsOfMorginarV2 PRIVATE resources)

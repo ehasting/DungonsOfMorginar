@@ -6,8 +6,7 @@
 #define DUNGONSOFMORGINAR_KEYCODES_HPP
 #include <string_view>
 #include <vector>
-#include <fmt/core.h>
-#include <fmt/ranges.h>
+#include <fmt/xchar.h>
 
 namespace DofM
 {

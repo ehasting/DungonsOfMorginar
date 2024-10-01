@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "core/DofM_TextRenderCache.h"
+#include "core/DofM_TextRenderCache.hpp"
 
 
 namespace DofM
@@ -30,7 +30,9 @@ namespace DofM
             std::cout << this->ScreenWidth << " x " << this->ScreenHeight <<std::endl;
             SDL_CreateWindowAndRenderer(this->ScreenWidth, this->ScreenHeight, 0, &window, &renderer);
             TTF_Init();
-            font = TTF_OpenFont("resources/dos.ttf", this->FontHeight);
+            //font = TTF_OpenFont("resources/dos.ttf", this->FontHeight);
+            font = TTF_OpenFont("resources/LiberationMono-Regular.ttf", this->FontHeight);
+
         }
         ~LinuxTerminal()
         {
@@ -60,7 +62,7 @@ namespace DofM
             SDL_RenderPresent(this->renderer);
         }
 
-        void PrintLetter(int x, int y, Uint32 letter, SDL_Color fgcolor) override
+        void PrintLetter(int x, int y, const std::string &letter, SDL_Color fgcolor) override
         {
             if (y * FontWidth > this->ScreenWidth)
             {
@@ -87,8 +89,8 @@ namespace DofM
 
         DofM_TextRenderCache RenderCache;
 
-        const unsigned short FontHeight = 16;
-        const unsigned short FontWidth = 9;
+        const unsigned short FontHeight = 14;
+        const unsigned short FontWidth = 8;
         const unsigned short ScreenHeight = 720;
         const unsigned short ScreenWidth = 1280;
 

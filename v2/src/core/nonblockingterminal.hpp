@@ -62,7 +62,7 @@ namespace DofM
         void ProcessKeyPressEventQueue();
 
         unsigned int ScreenBufferLength;
-        std::vector<char> ScreenBuffer;
+        std::vector<std::string> ScreenBuffer;
         std::vector<SDL_Color> ScreenBufferColor;
         void ResizeScreenBuffer()
         {
@@ -72,7 +72,7 @@ namespace DofM
 
             this->ScreenBuffer.clear();
             this->ScreenBuffer.resize(this->ScreenBufferLength);
-            std::fill(this->ScreenBuffer.begin(), this->ScreenBuffer.end(), ' ');
+            std::fill(this->ScreenBuffer.begin(), this->ScreenBuffer.end(), " ");
 
             this->ScreenBufferColor.clear();
             this->ScreenBufferColor.resize(this->ScreenBufferLength);

@@ -25,7 +25,11 @@ namespace DofM
             this->SetCol(col);
             this->SetRow(row);
         }
-
+        ScreenPos AddOffset(ScreenPos &offset)
+        {
+            ScreenPos rval(_col + offset.Col(), _row + offset.Row());
+            return rval;
+        }
         unsigned int Row()
         {
             return this->_row;

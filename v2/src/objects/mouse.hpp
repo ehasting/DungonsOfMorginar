@@ -11,7 +11,6 @@
 #include "fmt/core.h"
 #include <string>
 #include <memory>
-#include <iostream>
 
 namespace DofM
 {
@@ -59,7 +58,7 @@ namespace DofM
                     stateword = "DEAD";
                     break;
             }
-            fmt::print("Changing state to {} ({})\n", newstate, stateword);
+                std::cout << fmt::format("Changing state to {} ({})\n", newstate, stateword);
             State = newstate;
         }
 
@@ -167,7 +166,7 @@ namespace DofM
                     auto currenttarget = std::dynamic_pointer_cast<Mouse>(n);
                     if (this->ObjectLocation->ToString() == currenttarget->ObjectLocation->ToString())
                     {
-                        fmt::print("Same location?!  {} {} \n", this->UniqueName, currenttarget->UniqueName);
+                        std::cout  << fmt::format("Same location?!  {} {} \n", this->UniqueName, currenttarget->UniqueName);
                     }
                     this->UpsertLivingObjectIfInRange(currenttarget);
                 }
@@ -226,7 +225,7 @@ namespace DofM
             }
             else
             {
-                this->CurrentDescription = fmt::format("[{}] {}  {} / {} (HP / ST) (Loc: {})", this->TypeName, UniqueName, Stats.Health.GetCurrent(), Stats.Stamina.GetCurrent(), this->ObjectLocation->ToString());
+                this->CurrentDescription = fmt::format("[{}] {} ({})  {} / {} (HP / ST) (Loc: {})", this->TypeName, UniqueName, UniqueNameHash, Stats.Health.GetCurrent(), Stats.Stamina.GetCurrent(), this->ObjectLocation->ToString());
             }
             return true;
         };

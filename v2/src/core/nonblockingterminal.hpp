@@ -125,17 +125,17 @@ namespace DofM
         {
             if (pos.Col() > this->ColMax)
             {
-                fmt::print("col out of bounds (max: {}, got: {})", this->ColMax, pos.Col());
+                //fmt::print("col out of bounds (max: {}, got: {})", this->ColMax, pos.Col());
                 throw std::invalid_argument("See last printout");
             }
             if (pos.Row() > this->RowMax)
             {
-                fmt::print("row out of bounds (max: {}, got: {})", this->RowMax, pos.Row());
+                //fmt::print("row out of bounds (max: {}, got: {})", this->RowMax, pos.Row());
                 throw std::invalid_argument("See last printout");
             }
             if (pos.Col()+textlength > this->ColMax)
             {
-                fmt::print("textlength out of bounds (max: {}, got: {})", this->ColMax, pos.Col()+textlength);
+                //fmt::print("textlength out of bounds (max: {}, got: {})", this->ColMax, pos.Col()+textlength);
                 //throw std::invalid_argument(error);
             }
         }

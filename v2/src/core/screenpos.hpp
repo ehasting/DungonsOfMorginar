@@ -40,6 +40,11 @@ namespace DofM
             return this->_col;
         }
 
+        void IncreaseRow()
+        {
+           this->_row++;
+        }
+
         void SetRow(unsigned int row)
         {
             if (row >= 0)

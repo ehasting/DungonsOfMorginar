@@ -67,7 +67,8 @@ namespace DofM
         }
         bool TryMoveNorth()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtNorthWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(0,1,0)))
+            Location::SLocation NewObjectLocation = std::make_shared<Location>(*ObjectLocation); NewObjectLocation->MoveNorth();
+            if (CanMove() && this->ObjectMapRegion->CanMove(NewObjectLocation) && IsLocationEmpty(NewObjectLocation))
             {
                 this->ObjectLocation->MoveNorth();
                 Stats.Stamina.RemoveStats();
@@ -77,7 +78,8 @@ namespace DofM
         }
         bool TryMoveSouth()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtSouthWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(0,-1,0)))
+            Location::SLocation NewObjectLocation = std::make_shared<Location>(*ObjectLocation); NewObjectLocation->MoveSouth();
+            if (CanMove() && this->ObjectMapRegion->CanMove(NewObjectLocation) && IsLocationEmpty(NewObjectLocation))
             {
                 this->ObjectLocation->MoveSouth();
                 Stats.Stamina.RemoveStats();
@@ -87,7 +89,8 @@ namespace DofM
         }
         bool TryMoveEast()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtEastWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(1,0,0)))
+            Location::SLocation NewObjectLocation = std::make_shared<Location>(*ObjectLocation); NewObjectLocation->MoveEast();
+            if (CanMove() && this->ObjectMapRegion->CanMove(NewObjectLocation) && IsLocationEmpty(NewObjectLocation))
             {
                 this->ObjectLocation->MoveEast();
                 Stats.Stamina.RemoveStats();
@@ -97,7 +100,8 @@ namespace DofM
         }
         bool TryMoveWest()
         {
-            if (CanMove() && !this->ObjectMapRegion->IsAtWestWall(ObjectLocation) && IsLocationEmpty(ObjectLocation->OffsetLocation(-1,0,0)))
+            Location::SLocation NewObjectLocation = std::make_shared<Location>(*ObjectLocation); NewObjectLocation->MoveWest();
+            if (CanMove() && this->ObjectMapRegion->CanMove(NewObjectLocation) && IsLocationEmpty(NewObjectLocation))
             {
                 this->ObjectLocation->MoveWest();
                 Stats.Stamina.RemoveStats();

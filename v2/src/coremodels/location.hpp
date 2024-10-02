@@ -73,6 +73,15 @@ namespace DofM
             //std::cout << fmt::format("X: {}", this->X) << std::endl;
         }
 
+        bool IsSame(const SLocation &other)
+        {
+            if ((this->X == other->X) && (this->Y == other->Y) && (this->Z == other->Z))
+            {
+                return true;
+            }
+            return false;
+        }
+
         bool IsBeside(const SLocation &other) const
         {
             int diffX = this->X - other->X;

@@ -21,7 +21,15 @@ GameLoop::GameLoop()
     this->TestMap = std::make_shared<MapRegions>(
         "Prison Cell 352 øæå █▄▌▐▀█",
         std::make_shared<Location>(0,0,0),
-        std::make_shared<Location>(4, 4, 0));
+        std::make_shared<Location>(9, 9, 0));
+    this->TestMap->Description = "You are in a prison cell, there is a table in the middle of the room.";
+    this->TestMap->AddWallsToRoom();
+    MapObject n0;
+    n0.StartLocation = std::make_shared<Location>(5,5,0);
+    n0.StopLocation = std::make_shared<Location>(7,6,0);
+    this->TestMap->MapObjects.push_back(n0);
+
+
 
     this->Hero = std::make_shared<Character>("Hero 2000", std::make_shared<Location>(1, 1, 1), this->DynamicObjects);
     this->Hero->SetMap(this->TestMap);
@@ -52,6 +60,7 @@ GameLoop::GameLoop()
     //auto l = n->GetDynamicObject();
     this->DynamicObjects->push_back(this->Hero);
     this->DynamicObjects->push_back(m1);
+
     this->DynamicObjects->push_back(m2);
     this->DynamicObjects->push_back(m3);
     this->DynamicObjects->push_back(m4);
@@ -63,6 +72,7 @@ GameLoop::GameLoop()
     this->DynamicObjects->push_back(m10);
     this->DynamicObjects->push_back(m11);
     this->DynamicObjects->push_back(m12);
+
     this->MainEventThread = std::make_shared<std::thread>([this]{ this->MainEventWorker(); });
     this->InputProcessThread = std::make_shared<std::thread>([this] { this->InputProcessorWorker(); });
 
@@ -157,20 +167,20 @@ void GameLoop::DrawLoopWorker()
 
     while (this->IsRunning)
     {
-        int rowoffset = 18;
+        int rowoffset = 25;
         auto innermapoffset = ScreenPos(5,5);
         auto outermapoffset = ScreenPos(4,4);
         next_tick = SDL_GetTicks() + (1000 / 20);
 
         this->TestMap->DrawMap(Term, outermapoffset);
 
-        Term->WriteToBuffer( ToolsObject.RepeateString("▄",Term->ColMax) , ScreenPos(0,16), Term->ColMax);
+        Term->WriteToBuffer( ToolsObject.RepeateString("▄",Term->ColMax) , ScreenPos(0,24), Term->ColMax);
         for (auto n: *this->DynamicObjects)
         {
             if (n->GetTypeName() == Mouse::TypeName)
             {
                 auto cc = n->GetRealObject<Mouse>();
-                auto pos = cc->ObjectLocation->ReturnAsScreenPos().AddOffset(innermapoffset);
+                auto pos = cc->ObjectLocation->ReturnAsScreenPos().AddOffset(outermapoffset);
                 /*
                 auto pos = ScreenPos(
                     cc->ObjectLocation->X - this->TestMap->StartLocation->X,

@@ -11,49 +11,93 @@
 #include "tools.hpp"
 namespace DofM
 {
+    class MapObject
+    {
+    private:
+        std::vector<Location::SLocation> LocationCache;
+        bool IsCached = false;
+    public:
+        Location::SLocation StartLocation;
+        Location::SLocation StopLocation;
+        std::string MapSymbol = "░";
+        std::vector<Location::SLocation> GetAllLocations()
+        {
+            if (!IsCached)
+            {
+                IsCached = true;
+                auto minx = this->StartLocation->X;
+                auto miny = this->StartLocation->Y;
+                auto maxx = this->StopLocation->X;
+                auto maxy = this->StopLocation->Y;
+
+                for(int ly = miny; ly <= maxy; ly++)
+                {
+                    for(int lx = minx; lx <= maxx; lx++)
+                    {
+                        LocationCache.push_back(std::make_shared<Location>(lx, ly, 0));
+                    }
+                }
+            }
+            return LocationCache;
+        }
+    };
     class MapRegions
     {
         DofM::Tools ToolsObject;
     public:
         typedef std::shared_ptr<MapRegions> SMapRegions;
         std::string UniqueName;
+        std::string Description;
         Location::SLocation StartLocation;
         Location::SLocation StopLocation;
+
+        std::vector<MapObject> MapObjects;
         MapRegions(std::string name, Location::SLocation start, Location::SLocation stop) : StartLocation(start), StopLocation(stop)
         {
             this->UniqueName = name;
         }
 
-        bool CanMove(Location::SLocation const& TargetLocation) const
+        void AddWallsToRoom()
         {
-            if ((StartLocation->Y < TargetLocation->Y &&
-                 StopLocation->Y > TargetLocation->Y) &&
-                (StartLocation->X < TargetLocation->X &&
-                 StopLocation->X > TargetLocation->X))
-            {
-                return true;
-            }
-            return false;
+            MapObject n1;
+            n1.StartLocation = std::make_shared<Location>(*StartLocation);
+            n1.StopLocation = std::make_shared<Location>(StartLocation->X,StopLocation->Y,0);
+            this->MapObjects.push_back(n1);
+
+            MapObject n2;
+            n2.StartLocation = std::make_shared<Location>(*StartLocation);
+            n2.StopLocation = std::make_shared<Location>(StopLocation->X,StartLocation->Y,0);
+            this->MapObjects.push_back(n2);
+
+            MapObject n3;
+            n3.StartLocation = std::make_shared<Location>(StartLocation->X,StopLocation->Y,0);
+            n3.StopLocation = std::make_shared<Location>(*StopLocation);
+            this->MapObjects.push_back(n3);
+
+            MapObject n4;
+            n4.StartLocation = std::make_shared<Location>(StopLocation->X,StartLocation->Y,0);
+            n4.StopLocation = std::make_shared<Location>(*StopLocation);
+            this->MapObjects.push_back(n4);
+
         }
 
-        // Wall in room is taking one space - so we check if we are at wall, not at edge of room.
-        bool IsAtNorthWall(Location::SLocation const& TargetLocation)
+        bool CanMove(Location::SLocation const& TargetLocation)
         {
-            return this->StartLocation->Y + 1 == TargetLocation->Y;
+            // we are inside the walls, lets check if we are crashing with objects.
+            for (auto &n : MapObjects)
+            {
+                for (auto &nn: n.GetAllLocations())
+                {
+                    if (nn->IsSame(TargetLocation))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
-        bool IsAtSouthWall(Location::SLocation const& TargetLocation)
-        {
-            return this->StopLocation->Y - 1 == TargetLocation->Y;
-        }
-        bool IsAtWestWall(Location::SLocation const& TargetLocation)
-        {
-            return this->StartLocation->X + 1 == TargetLocation->X;
-        }
-        bool IsAtEastWall(Location::SLocation const& TargetLocation)
-        {
-            //std::cout << fmt::format("{} == {}", this->StopLocation->X - 1,  TargetLocation->X) << std::endl;
-            return this->StopLocation->X - 1 == TargetLocation->X;
-        }
+
 
         unsigned long Width()
         {
@@ -85,19 +129,34 @@ namespace DofM
             return std::make_shared<Location>(X,Y,Z);
         }
 
-        void DrawMap(std::shared_ptr<NonBlockingTerminal> term, ScreenPos drawstart)
+        void DrawMap(std::shared_ptr<NonBlockingTerminal> term, ScreenPos &drawstart)
         {
-
             term->WriteToBuffer(fmt::format("Room: {}", this->UniqueName), ScreenPos(0,0).AddOffset(drawstart), term->RowMax, {255,0,64,255});
-            term->WriteToBuffer(ToolsObject.RepeateString("█", this->Width()+1), ScreenPos(0,1).AddOffset(drawstart), this->Width()+1);
-            for(int x = 0; x < this-> Height()-1; x++)
-            {
-                //term->WriteToBuffer("█", ScreenPos(0,x+2).AddOffset(drawstart), 1); // left
-                term->WriteToBuffer(fmt::format("█{}█", std::string(this->Width()-1, '-')), ScreenPos(0,x+2).AddOffset(drawstart), this->Width()+1);
+            drawstart.IncreaseRow();
+            term->WriteToBuffer(fmt::format("Description: {}", "Nothing right now"), ScreenPos(0,0).AddOffset(drawstart), term->RowMax, {128,200,64,255});
+            drawstart.IncreaseRow();
+            drawstart.IncreaseRow();
+            auto minx = this->StartLocation->X;
+            auto miny = this->StartLocation->Y;
+            auto maxx = this->StopLocation->X;
+            auto maxy = this->StopLocation->Y;
 
-                //term->WriteToBuffer("█", ScreenPos(this-> Width(),x+2).AddOffset(drawstart), 1); // right
+            /// Clear the map area
+            for(int ly = miny; ly <= maxy; ly++)
+            {
+                for(int lx = minx; lx <= maxx; lx++)
+                {
+                    term->WriteToBuffer(" ", Location(lx, ly, 0).ReturnAsScreenPos().AddOffset(drawstart), 1);
+                }
             }
-            term->WriteToBuffer(ToolsObject.RepeateString("█", this-> Width()+1), ScreenPos(0,this->Height()+1).AddOffset(drawstart), this->Width()+1);
+            for( auto  &n: MapObjects)
+            {
+                for (auto &nn: n.GetAllLocations())
+                {
+                    term->WriteToBuffer(n.MapSymbol, nn->ReturnAsScreenPos().AddOffset(drawstart), 1);
+                }
+                //
+            }
         }
 
     };

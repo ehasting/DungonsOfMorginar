@@ -58,7 +58,7 @@ namespace DofM
                     stateword = "DEAD";
                     break;
             }
-                std::cout << fmt::format("Changing state to {} ({})\n", newstate, stateword);
+            std::cout << fmt::format("Changing state to {} ({})\n", newstate, stateword);
             State = newstate;
         }
 
@@ -92,36 +92,36 @@ namespace DofM
 
         void Move(long long int tick)
         {
-            bool HasMoved = false;
             if ((tick % MoveEveryTick) == 0)
             {
+                auto dice = this->LocalToolsObject.Dice(50,1);
 
-                if (this->LocalToolsObject.Dice(6) > 4 && !this->ObjectMapRegion->IsAtNorthWall(this->ObjectLocation))
+                if (dice >=1 && dice <= 10)
                 {
                     if (this->TryMoveNorth())
                     {
-                        HasMoved = true;
+                        return;
                     }
                 }
-                else if (this->LocalToolsObject.Dice(6) > 4 && !this->ObjectMapRegion->IsAtSouthWall(this->ObjectLocation))
+                else if (dice >=11 && dice <= 20)
                 {
                     if (this->TryMoveSouth())
                     {
-                        HasMoved = true;
+                        return;
                     }
                 }
-                else if (this->LocalToolsObject.Dice(6) > 4 && !this->ObjectMapRegion->IsAtEastWall(this->ObjectLocation))
+                else if (dice >=21 && dice <= 30)
                 {
                     if (this->TryMoveEast())
                     {
-                        HasMoved = true;
+                        return;
                     }
                 }
-                else if (this->LocalToolsObject.Dice(6) > 4 && !this->ObjectMapRegion->IsAtWestWall(this->ObjectLocation))
+                else if (dice >=41 && dice <= 50)
                 {
                     if (this->TryMoveWest())
                     {
-                        HasMoved = true;
+                        return;
                     }
                 }
             }
@@ -166,7 +166,7 @@ namespace DofM
                     auto currenttarget = std::dynamic_pointer_cast<Mouse>(n);
                     if (this->ObjectLocation->ToString() == currenttarget->ObjectLocation->ToString())
                     {
-                        std::cout  << fmt::format("Same location?!  {} {} \n", this->UniqueName, currenttarget->UniqueName);
+                        //std::cout  << fmt::format("Same location?!  {} {} \n", this->UniqueName, currenttarget->UniqueName);
                     }
                     this->UpsertLivingObjectIfInRange(currenttarget);
                 }

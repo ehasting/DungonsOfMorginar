@@ -26,8 +26,9 @@ namespace DofM
         std::vector<TermRendringAttrs> emptyattr;
         this->WriteToBuffer(text, pos, maxtextlength, White);
     }
-    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg)
+    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg, int priority)
     {
+        // TODO:  Implement "z-index" of priorty to force text on top (not allow overwrite over higher prioirty)
         if (!this->IsReady)
             return;
         this->DrawMutex.lock();

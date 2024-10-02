@@ -117,7 +117,7 @@ namespace DofM
 
         void Redraw();
 
-        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg );
+        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg , int priority = 10);
         void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength);
 
 

@@ -205,10 +205,7 @@ void GameLoop::DrawLoopWorker()
             {
                 auto cc = n->GetRealObject<Character>();
                 SDL_Color cColor = {255, 25, 64, 255};
-                auto pos = ScreenPos(
-                    cc->ObjectLocation->X - this->TestMap->StartLocation->X,
-                    cc->ObjectLocation->Y - this->TestMap->StartLocation->Y
-                    );
+                auto pos = cc->ObjectLocation->ReturnAsScreenPos().AddOffset(outermapoffset);
                 Term->WriteToBuffer("0", pos, 1, cColor);
             }
 

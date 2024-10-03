@@ -15,7 +15,7 @@ namespace DofM
 class NamingSystem
 {
 
-    std::vector<std::string> NameList = {"James", "Bond", "Rambo", "T900", "Arnold", "Rocky", "Egi", "Tor", "Ståle", "Mathias", "Lucas", "Connor", "John", "MacClain", "Wick"};
+    std::vector<std::string> NameList = {"James", "Bond", "Rambo", "T800", "Arnold", "Rocky", "Egi", "Tor", "Ståle", "Mathias", "Lucas", "Connor", "John", "MacClain", "Wick"};
     std::vector<std::string> TitleList = {"Sir", "Mr.", "Master", "Duke", "Lord", "His Honour", "Dr.", "His Eminence"};
     std::vector<std::string> SuffixList = {"the Great", "the Useless", "of Loosertown", "the Insignificant", "of Smalltown"};
     std::vector<std::string> TakenNames;

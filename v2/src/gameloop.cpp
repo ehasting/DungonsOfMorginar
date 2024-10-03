@@ -167,14 +167,20 @@ void GameLoop::DrawLoopWorker()
 
     while (this->IsRunning)
     {
+
         int rowoffset = 25;
+        int lineseparator = 24;
         auto innermapoffset = ScreenPos(5,5);
         auto outermapoffset = ScreenPos(4,4);
         next_tick = SDL_GetTicks() + (1000 / 20);
 
         this->TestMap->DrawMap(Term, outermapoffset);
 
-        Term->WriteToBuffer( ToolsObject.RepeateString("▄",Term->ColMax) , ScreenPos(0,24), Term->ColMax);
+        Term->WriteToBuffer( ToolsObject.RepeateString("█",Term->ColMax) , ScreenPos(0,lineseparator), Term->ColMax);
+        for(int x = 0; x < lineseparator; x++)
+        {
+            Term->WriteToBuffer("│", ScreenPos((Term->ColMax/3)*2, x), 1);
+        }
         for (auto n: *this->DynamicObjects)
         {
             if (n->GetTypeName() == Mouse::TypeName)

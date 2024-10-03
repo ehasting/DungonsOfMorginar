@@ -21,7 +21,7 @@ GameLoop::GameLoop()
     this->TestMap = std::make_shared<MapRegions>(
         "Prison Cell 352 øæå █▄▌▐▀█",
         std::make_shared<Location>(0,0,0),
-        std::make_shared<Location>(9, 9, 0));
+        std::make_shared<Location>(16, 9, 0));
     this->TestMap->Description = "You are in a prison cell, there is a table in the middle of the room.";
     this->TestMap->AddWallsToRoom();
     MapObject n0;
@@ -206,7 +206,7 @@ void GameLoop::DrawLoopWorker()
                 auto cc = n->GetRealObject<Character>();
                 SDL_Color cColor = {255, 25, 64, 255};
                 auto pos = cc->ObjectLocation->ReturnAsScreenPos().AddOffset(outermapoffset);
-                Term->WriteToBuffer("0", pos, 1, cColor);
+                Term->WriteToBuffer("0", pos, 1, cColor, 1);
             }
 
             Term->WriteToBuffer(n->GetDescriptionLine(),

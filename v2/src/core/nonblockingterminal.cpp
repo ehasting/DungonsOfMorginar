@@ -41,10 +41,14 @@ namespace DofM
         // should be one for loop
         for (unsigned int x = cleanbufferstartindex; x < cleanbufferstartindex+maxtextlength; x++)
         {
-            this->ScreenBuffer[x] = " ";
-            this->ScreenBufferColor[x] = White;
+            if ((this->ScreenBuffer[bufferstartindex].Priority >= priority) || this->ScreenBuffer[bufferstartindex].IsOld())
+            {
+                this->ScreenBuffer[x].Character = " ";
+                this->ScreenBuffer[x].Color = White;
+            }
         }
-
+        try
+        {
         char* str = (char*)text.c_str();
         char* str_i = str;                  // string iterator
         char* end = str+strlen(str)+1;      // end iterator
@@ -57,12 +61,19 @@ namespace DofM
             char symbol[5] = {0};
             utf8::append(code, symbol); // copy code to symbol
             std::string newchar(symbol);
-            this->ScreenBufferColor[bufferstartindex] = fg;
-            this->ScreenBuffer[bufferstartindex] = newchar;
+            if (this->ScreenBuffer[bufferstartindex].Priority >= priority || this->ScreenBuffer[bufferstartindex].IsOld())
+            {
+                this->ScreenBuffer[bufferstartindex].Color = fg;
+                this->ScreenBuffer[bufferstartindex].Character = newchar;
+                this->ScreenBuffer[bufferstartindex].Priority = priority;
+            }
             bufferstartindex++;
         }
         while ( str_i < end );
-
+        }
+        catch(const std::exception& e)  {
+            fmt::print("Error: {}", e.what());
+        }
         this->DrawMutex.unlock();
     }
 
@@ -116,8 +127,8 @@ namespace DofM
         unsigned int buffercursor = 0;
         for (auto &c : this->ScreenBuffer)
         {
-            auto formating = this->ScreenBufferColor[buffercursor];
-            outbuffer += c;
+            c.DrawCount++;
+            outbuffer += c.Character;
             linecursor++;
             if (linecursor >= this->ColMax)
             {
@@ -126,7 +137,7 @@ namespace DofM
                 linecursor = 0;
                 row++;
             }
-            this->Terminal->PrintLetter(linecursor, row, c, formating);
+            this->Terminal->PrintLetter(linecursor, row, c.Character, c.Color);
             buffercursor++;
              //outbuffer += '\n';
         }

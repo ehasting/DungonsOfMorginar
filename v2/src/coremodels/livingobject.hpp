@@ -58,7 +58,7 @@ namespace DofM
         {
             for (auto &obj : LivingObjectsInRange)
             {
-                if (obj->ObjectLocation == futurelocation)
+                if (obj->ObjectLocation->IsSame(futurelocation))
                 {
                     return false;
                 }

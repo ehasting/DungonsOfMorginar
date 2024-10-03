@@ -39,6 +39,32 @@
  */
 namespace DofM
 {
+    const SDL_Color White = {255,255,255,255};
+    class ScreenCharacter
+    {
+    public:
+        std::string Character;
+        SDL_Color Color;
+        int Priority = 10;
+        long DrawCount = 0;
+        ScreenCharacter()
+        {
+            this->Character = " ";
+            this->Color = White;
+            this->Priority = 10;
+        }
+        ScreenCharacter(std::string ch, SDL_Color color, int pri = 10)
+        {
+            this->Character = ch;
+            this->Color = color;
+            this->Priority = pri;
+        }
+        bool IsOld()
+        {
+            return DrawCount > 0;
+        }
+
+    };
     class NonBlockingTerminal
     {
     public:
@@ -48,7 +74,9 @@ namespace DofM
         {
             this->IsRunning = false;
         }
-        const SDL_Color White = {255,255,255,255};
+
+
+
     protected:
         bool IsReady = false;
         bool IsRunning = true;
@@ -62,8 +90,7 @@ namespace DofM
         void ProcessKeyPressEventQueue();
 
         unsigned int ScreenBufferLength;
-        std::vector<std::string> ScreenBuffer;
-        std::vector<SDL_Color> ScreenBufferColor;
+        std::vector<ScreenCharacter> ScreenBuffer;
         void ResizeScreenBuffer()
         {
             this->DrawMutex.lock();
@@ -72,12 +99,9 @@ namespace DofM
 
             this->ScreenBuffer.clear();
             this->ScreenBuffer.resize(this->ScreenBufferLength);
-            std::fill(this->ScreenBuffer.begin(), this->ScreenBuffer.end(), " ");
+            for(int x = 0; x >this->ScreenBufferLength;x++) this->ScreenBuffer.push_back(ScreenCharacter());
 
-            this->ScreenBufferColor.clear();
-            this->ScreenBufferColor.resize(this->ScreenBufferLength);
-            SDL_Color white = {255,255,255,255};
-            std::fill(this->ScreenBufferColor.begin(), this->ScreenBufferColor.end(), white);
+
             this->DrawMutex.unlock();
         }
 

@@ -21,12 +21,12 @@ namespace DofM
     {
     }
 
-    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength)
+    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos)
     {
         std::vector<TermRendringAttrs> emptyattr;
-        this->WriteToBuffer(text, pos, maxtextlength, White);
+        this->WriteToBuffer(text, pos, White);
     }
-    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg, int priority)
+    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, SDL_Color fg, int priority)
     {
         // TODO:  Implement "z-index" of priorty to force text on top (not allow overwrite over higher prioirty)
         if (!this->IsReady)
@@ -39,14 +39,6 @@ namespace DofM
         unsigned int cleanbufferstartindex = bufferstartindex;
 
         // should be one for loop
-        for (unsigned int x = cleanbufferstartindex; x < cleanbufferstartindex+maxtextlength; x++)
-        {
-            if ((this->ScreenBuffer[bufferstartindex].Priority >= priority) || this->ScreenBuffer[bufferstartindex].IsOld())
-            {
-                this->ScreenBuffer[x].Character = " ";
-                this->ScreenBuffer[x].Color = White;
-            }
-        }
         try
         {
         char* str = (char*)text.c_str();
@@ -61,7 +53,7 @@ namespace DofM
             char symbol[5] = {0};
             utf8::append(code, symbol); // copy code to symbol
             std::string newchar(symbol);
-            if (this->ScreenBuffer[bufferstartindex].Priority >= priority || this->ScreenBuffer[bufferstartindex].IsOld())
+            if (priority <= this->ScreenBuffer[bufferstartindex].Priority)
             {
                 this->ScreenBuffer[bufferstartindex].Color = fg;
                 this->ScreenBuffer[bufferstartindex].Character = newchar;
@@ -104,7 +96,7 @@ namespace DofM
         if (ischanged)
         {
             this->ResizeScreenBuffer();
-            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(5,1), 25);
+            this->WriteToBuffer(fmt::format("changed term to : {}x{}", this->RowMax, this->ColMax), ScreenPos(5,1));
             this->Terminal->ClearScreen();
             //this->Redraw();
         }
@@ -127,7 +119,6 @@ namespace DofM
         unsigned int buffercursor = 0;
         for (auto &c : this->ScreenBuffer)
         {
-            c.DrawCount++;
             outbuffer += c.Character;
             linecursor++;
             if (linecursor >= this->ColMax)
@@ -142,6 +133,7 @@ namespace DofM
              //outbuffer += '\n';
         }
         this->Terminal->UpdateScreen();
+        this->ClearScreenBuffer();
         this->DrawMutex.unlock();
         RedrawCounter++;
     }

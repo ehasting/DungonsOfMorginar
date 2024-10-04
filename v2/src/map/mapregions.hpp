@@ -131,9 +131,9 @@ namespace DofM
 
         void DrawMap(std::shared_ptr<NonBlockingTerminal> term, ScreenPos &drawstart)
         {
-            term->WriteToBuffer(fmt::format("Room: {}", this->UniqueName), ScreenPos(0,0).AddOffset(drawstart), term->RowMax, {255,0,64,255});
+            term->WriteToBuffer(fmt::format("Room: {}", this->UniqueName), ScreenPos(0,0).AddOffset(drawstart), {255,0,64,255});
             drawstart.IncreaseRow();
-            term->WriteToBuffer(fmt::format("Description: {}", "Nothing right now"), ScreenPos(0,0).AddOffset(drawstart), term->RowMax, {128,200,64,255});
+            term->WriteToBuffer(fmt::format("Description: {}", "Nothing right now"), ScreenPos(0,0).AddOffset(drawstart), {128,200,64,255});
             drawstart.IncreaseRow();
             drawstart.IncreaseRow();
             auto minx = this->StartLocation->X;
@@ -146,14 +146,14 @@ namespace DofM
             {
                 for(int lx = minx; lx <= maxx; lx++)
                 {
-                    term->WriteToBuffer(" ", Location(lx, ly, 0).ReturnAsScreenPos().AddOffset(drawstart), 1);
+                    term->WriteToBuffer(" ", Location(lx, ly, 0).ReturnAsScreenPos().AddOffset(drawstart));
                 }
             }
             for( auto  &n: MapObjects)
             {
                 for (auto &nn: n.GetAllLocations())
                 {
-                    term->WriteToBuffer(n.MapSymbol, nn->ReturnAsScreenPos().AddOffset(drawstart), 1);
+                    term->WriteToBuffer(n.MapSymbol, nn->ReturnAsScreenPos().AddOffset(drawstart));
                 }
                 //
             }

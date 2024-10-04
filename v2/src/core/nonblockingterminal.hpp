@@ -46,12 +46,9 @@ namespace DofM
         std::string Character;
         SDL_Color Color;
         int Priority = 10;
-        long DrawCount = 0;
         ScreenCharacter()
         {
-            this->Character = " ";
-            this->Color = White;
-            this->Priority = 10;
+            Reset();
         }
         ScreenCharacter(std::string ch, SDL_Color color, int pri = 10)
         {
@@ -59,9 +56,11 @@ namespace DofM
             this->Color = color;
             this->Priority = pri;
         }
-        bool IsOld()
+        void Reset()
         {
-            return DrawCount > 0;
+            this->Character = " ";
+            this->Color = White;
+            this->Priority = 10;
         }
 
     };
@@ -74,6 +73,17 @@ namespace DofM
         {
             this->IsRunning = false;
         }
+        void StartIO()
+        {
+            this->IOMutex.lock();
+        }
+
+        void StopIO()
+        {
+            this->IOMutex.unlock();
+        }
+        std::mutex IOMutex;
+
 
 
 
@@ -82,7 +92,7 @@ namespace DofM
         bool IsRunning = true;
         bool IsInNonBlockingMode = false;
 
-        std::mutex IOMutex;
+
         std::mutex DrawMutex;
 
         std::shared_ptr<ITerminal> Terminal;
@@ -103,6 +113,13 @@ namespace DofM
 
 
             this->DrawMutex.unlock();
+        }
+        void ClearScreenBuffer()
+        {
+            for(auto &n : this->ScreenBuffer)
+            {
+                n.Reset();
+            }
         }
 
 
@@ -141,8 +158,8 @@ namespace DofM
 
         void Redraw();
 
-        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength, SDL_Color fg , int priority = 10);
-        void WriteToBuffer(std::string text, ScreenPos pos, unsigned int maxtextlength);
+        void WriteToBuffer(std::string text, ScreenPos pos, SDL_Color fg , int priority = 10);
+        void WriteToBuffer(std::string text, ScreenPos pos);
 
 
         void CheckIfOnScreen(ScreenPos pos, unsigned int textlength)

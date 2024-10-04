@@ -99,7 +99,7 @@ void GameLoop::ProcessKeyPressEventCallback(std::vector<SDL_Scancode> scancode)
         switch (sc)
         {
         case SDL_SCANCODE_UP:
-            this->Term->WriteToBuffer(fmt::format("[BUFFER]: UP"), ScreenPos(4, 5), 16);
+            this->Term->WriteToBuffer(fmt::format("[BUFFER]: UP"), ScreenPos(4, 5));
             this->Hero->TryMoveNorth();
             break;
         case SDL_SCANCODE_DOWN:
@@ -115,11 +115,11 @@ void GameLoop::ProcessKeyPressEventCallback(std::vector<SDL_Scancode> scancode)
             this->Hero->TryMoveEast();
             break;
         case SDL_SCANCODE_ESCAPE:
-            this->Term->WriteToBuffer(fmt::format("[BUFFER]: ESC"), ScreenPos(4, 5), 16);
+            this->Term->WriteToBuffer(fmt::format("[BUFFER]: ESC"), ScreenPos(4, 5));
             this->Terminate();
             break;
         case SDL_SCANCODE_F5:
-            this->Term->WriteToBuffer(fmt::format("[BUFFER]: F5"), ScreenPos(4, 5), 16);
+            this->Term->WriteToBuffer(fmt::format("[BUFFER]: F5"), ScreenPos(4, 5));
             this->Terminate();
             break;
         case SDL_SCANCODE_BACKSPACE:
@@ -132,7 +132,7 @@ void GameLoop::ProcessKeyPressEventCallback(std::vector<SDL_Scancode> scancode)
         case SDL_SCANCODE_RETURN:
         {
             auto response = Parser.Parse(KeyLog);
-            this->Term->WriteToBuffer(fmt::format("[Response]: {}", response), ScreenPos(4, 5), 16);
+            this->Term->WriteToBuffer(fmt::format("[Response]: {}", response), ScreenPos(4, 5));
             KeyLog.clear();
         }
         break;
@@ -176,10 +176,10 @@ void GameLoop::DrawLoopWorker()
 
         this->TestMap->DrawMap(Term, outermapoffset);
 
-        Term->WriteToBuffer( ToolsObject.RepeateString("█",Term->ColMax) , ScreenPos(0,lineseparator), Term->ColMax);
+        Term->WriteToBuffer( ToolsObject.RepeateString("█",Term->ColMax) , ScreenPos(0,lineseparator));
         for(int x = 0; x < lineseparator; x++)
         {
-            Term->WriteToBuffer("│", ScreenPos((Term->ColMax/3)*2, x), 1);
+            Term->WriteToBuffer("│", ScreenPos((Term->ColMax/3)*2, x));
         }
         for (auto n: *this->DynamicObjects)
         {
@@ -200,11 +200,11 @@ void GameLoop::DrawLoopWorker()
                 SDL_Color cColor = {red, green, blue, alpha};
                 if (cc->IsAlive())
                 {
-                    Term->WriteToBuffer("☺", pos, 1, cColor);
+                    Term->WriteToBuffer("☺", pos, cColor);
                 }
                 else
                 {
-                    Term->WriteToBuffer("*", pos, 1, cColor);
+                    Term->WriteToBuffer("*", pos, cColor);
                 }
             }
             else if (n->GetTypeName() == Character::TypeName)
@@ -212,16 +212,17 @@ void GameLoop::DrawLoopWorker()
                 auto cc = n->GetRealObject<Character>();
                 SDL_Color cColor = {255, 25, 64, 255};
                 auto pos = cc->ObjectLocation->ReturnAsScreenPos().AddOffset(outermapoffset);
-                Term->WriteToBuffer("0", pos, 1, cColor, 1);
+                Term->WriteToBuffer("0", pos, cColor, 1);
             }
 
-            Term->WriteToBuffer(n->GetDescriptionLine(),
-                                ScreenPos(2, rowoffset), Term->ColMax);
+            Term->WriteToBuffer(n->GetDescriptionLine(), ScreenPos(2, rowoffset));
             rowoffset++;
         }
-        Term->WriteToBuffer(fmt::format("Test buffer: {}", this->KeyLog), ScreenPos(7, rowoffset+1), 32);
-
-        Term->Redraw();
+        Term->WriteToBuffer(fmt::format("Test buffer: {}", this->KeyLog), ScreenPos(7, rowoffset+1));
+        Term->WriteToBuffer(fmt::format("Tick delivered on {}ns", this->MainEventFrameTimeNS), ScreenPos(60, 0), {0,255,0,128});
+        {
+            Term->Redraw();
+        }
         sleep_ticks = next_tick - SDL_GetTicks();
         if (sleep_ticks > 0)
         {
@@ -239,11 +240,10 @@ void GameLoop::MainEventWorker()
     while (this->IsRunning)
     {
         auto now = std::chrono::steady_clock::now();
-        auto currentdurationms = std::chrono::duration_cast<std::chrono::milliseconds>(now - lasttick).count();
-        if (currentdurationms >= ticklengthms)
+        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(now - lasttick).count();
+        if (dur >= ticklengthms)
         {
             this->TickCounter++;
-            Term->WriteToBuffer(fmt::format("Tick delivered on {}ms", currentdurationms), ScreenPos(60, 0), 30, {0,255,0,128});
             // Update all DynamicObjects
             for (auto n: *this->DynamicObjects)
             {
@@ -259,6 +259,7 @@ void GameLoop::MainEventWorker()
             }
             // Update tick
             lasttick = std::chrono::steady_clock::now();
+            this->MainEventFrameTimeNS = std::chrono::duration_cast<std::chrono::nanoseconds>(lasttick - now).count();
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }

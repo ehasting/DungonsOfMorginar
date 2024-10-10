@@ -6,6 +6,7 @@
 #include <chrono>
 #include <typeinfo>
 #include "map/mapregions.hpp"
+#include "map/tile.hpp"
 #include <memory>
 
 
@@ -21,7 +22,8 @@ GameLoop::GameLoop()
     this->TestMap = std::make_shared<MapRegions>(
         "Prison Cell 352 øæå █▄▌▐▀█",
         std::make_shared<Location>(0,0,0),
-        std::make_shared<Location>(16, 9, 0));
+        std::make_shared<Location>(16, 9, 0),
+    Tile::GRASS_OUTSIDE_GROUND);
     this->TestMap->Description = "You are in a prison cell, there is a table in the middle of the room.";
     this->TestMap->AddWallsToRoom();
     MapObject n0;
@@ -163,10 +165,13 @@ void GameLoop::DrawLoopWorker()
 {
     Uint32 next_tick = 0;
     int sleep_ticks = 0;
-
+    int ticks_to_death = 100;
 
     while (this->IsRunning)
     {
+        //ticks_to_death--;
+        //if (ticks_to_death == 0)
+        //    this->IsRunning = false;
 
         int rowoffset = 25;
         int lineseparator = 24;
@@ -183,6 +188,7 @@ void GameLoop::DrawLoopWorker()
         }
         for (auto n: *this->DynamicObjects)
         {
+            SDL_Color cColor = White;
             if (n->GetTypeName() == Mouse::TypeName)
             {
                 auto cc = n->GetRealObject<Mouse>();
@@ -197,7 +203,7 @@ void GameLoop::DrawLoopWorker()
                 Uint8 green = (127 + cc->UniqueNameHash % 127);
                 Uint8 blue = (127 + cc->UniqueNameHash % 127);
                 Uint8 alpha = 255;
-                SDL_Color cColor = {red, green, blue, alpha};
+                cColor = {red, green, blue, alpha};
                 if (cc->IsAlive())
                 {
                     Term->WriteToBuffer("☺", pos, cColor);
@@ -215,7 +221,7 @@ void GameLoop::DrawLoopWorker()
                 Term->WriteToBuffer("0", pos, cColor, 1);
             }
 
-            Term->WriteToBuffer(n->GetDescriptionLine(), ScreenPos(2, rowoffset));
+            Term->WriteToBuffer(n->GetDescriptionLine(), ScreenPos(2, rowoffset), cColor);
             rowoffset++;
         }
         Term->WriteToBuffer(fmt::format("Test buffer: {}", this->KeyLog), ScreenPos(7, rowoffset+1));
@@ -230,6 +236,7 @@ void GameLoop::DrawLoopWorker()
         }
         //std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    std::cout << "Stopping DrawLoopWorker" << std::endl;
 }
 
 void GameLoop::MainEventWorker()
@@ -263,7 +270,7 @@ void GameLoop::MainEventWorker()
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-    //std::cout << "Stopping MainEventWorker" << std::endl;
+    std::cout << "Stopping MainEventWorker" << std::endl;
 }
 
 

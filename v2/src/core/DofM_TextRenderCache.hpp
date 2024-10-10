@@ -75,9 +75,15 @@ private:
     {
         RenderCache.emplace ( CreateKey(letter,fgcolor), RenderCacheObject(letter, font, renderer, fgcolor) );
     }
-    std::string CreateKey(const std::string letter, const SDL_Color fgcolor)
+    std::string CreateKey(const std::string &letter, const SDL_Color fgcolor)
     {
-        return fmt::format("{}{}{}{}_{}", fgcolor.r, fgcolor.g, fgcolor.b, fgcolor.a, letter);
+        std::string n;
+        n.append(std::to_string(fgcolor.r));
+        n.append(std::to_string(fgcolor.g));
+        n.append(std::to_string(fgcolor.b));
+        n.append("_");
+        n.append(letter);
+        return n;
     }
 public:
     std::chrono::high_resolution_clock::time_point LastCacheRefresh = std::chrono::high_resolution_clock::now();
@@ -86,26 +92,10 @@ public:
     SDL_Texture* GetTexture(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
     {
         SDL_Texture* rval;
-        std::chrono::duration<float> duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - this->LastCacheRefresh);
-        //std::cout << "Debug: GetTexture is called "<< duration.count()<< std::endl;
 
-        if (duration.count() > 100000.0f)
+        if (IsCacheCleanDue())
         {
-            std::vector<std::string> deletelist;
-            for (auto& x: this->RenderCache)
-            {
-                //std::cout << "Debug: Age: " << x.second.GetAgeInMs() << std::endl;
-                if (x.second.GetAgeInMs() > TextureMaxAgeMs)
-                {
-                    deletelist.push_back(x.first);
-                }
-            }
-            for (auto &x: deletelist)
-            {
-                this->RenderCache.erase(x);
-            }
-            LastCacheRefresh = std::chrono::high_resolution_clock::now();
-            //std::cout << "Removed " << deletelist.size() << " from texture cache" << std::endl;
+            CleanCache();
         }
 
         auto lookupkey = CreateKey( letter, fgcolor);
@@ -118,6 +108,35 @@ public:
 
 
         return rval;
+    }
+
+    bool IsCacheCleanDue()
+    {
+        return false; // DEBUG - not sure if we even need to clean cache.
+        std::chrono::duration<float> duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - this->LastCacheRefresh);
+        if (duration.count() > 100000.0f)
+        {
+            LastCacheRefresh = std::chrono::high_resolution_clock::now();
+            return true;
+        }
+        return false;
+    }
+
+    void CleanCache()
+    {
+        std::vector<std::string> deletelist;
+        for (auto& x: this->RenderCache)
+        {
+            //std::cout << "Debug: Age: " << x.second.GetAgeInMs() << std::endl;
+            if (x.second.GetAgeInMs() > TextureMaxAgeMs)
+            {
+                deletelist.push_back(x.first);
+            }
+        }
+        for (auto &x: deletelist)
+        {
+            this->RenderCache.erase(x);
+        }
     }
 
 };

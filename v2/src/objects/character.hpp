@@ -25,6 +25,10 @@ namespace DofM
         {
             //std::cout << "Update from " << this->GetTypeName() << std::endl;
             //std::cout << fmt::format("Location: {}", this->ObjectLocation->GetMatchLocation()) << std::endl;
+            if (tick % 10 == 0)
+            {
+                this->RegainStamina(1);
+            }
             this->CurrentDescription = fmt::format("[{}] {} is having {} STAMINA and {} HP left (Loc: {})", this->TypeName, UniqueName, Stats.Stamina.GetCurrent(), Stats.Health.GetCurrent(), this->ObjectLocation->ToString());
             return true;
         };

@@ -28,10 +28,17 @@ namespace DofM
             return SLocatedObject(this);
             //return std::dynamic_pointer_cast<T>(std::make_shared<T>(this));
         }
-        void SetMap(MapRegions::SMapRegions map)
+        void SetMap(MapRegions::SMapRegions map, bool placerandom = true)
         {
             this->ObjectMapRegion = map;
-            this->ObjectLocation = map->GetCenter();
+            if (placerandom)
+            {
+                this->ObjectLocation = map->GetRandomLocationInsideRoom();
+            }
+            else
+            {
+                this->ObjectLocation = map->GetCenter();
+            }
         }
     };
 }

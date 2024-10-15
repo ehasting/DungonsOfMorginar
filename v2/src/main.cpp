@@ -16,9 +16,9 @@ auto run() -> void
     std::cout << "Test from run()" << std::endl;
 }
 
+
 int main (int argc, char *argv[])
 {
-
     //auto n = std::make_shared<DofM::LinuxTerminal>();
     Uint32 next_tick = 0;
     int sleep_ticks = 0;

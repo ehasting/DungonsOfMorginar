@@ -7,10 +7,21 @@
 
 #include <unordered_map>
 #include <string>
+#include <iostream>
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "fmt/xchar.h"
+constexpr uint8_t b1 = 8 * 7;
+constexpr uint8_t b2 = 8 * 6;
+constexpr uint8_t b3 = 8 * 5;
+constexpr uint8_t b4 = 8 * 4;
+constexpr uint8_t b5 = 8 * 3;
+constexpr uint8_t b6 = 8 * 2;
+constexpr uint8_t b7 = 8 * 1;
+constexpr uint8_t b8 = 0;
+
+typedef uint64_t CacheKeyType;
 
 class DofM_TextRenderCache
 {
@@ -69,25 +80,57 @@ private:
             }
             //std::cout << "Deconstruct Texture cache object" << std::endl;
         }
-
     };
-    void AddToCache(const std::string letter, TTF_Font *font, SDL_Renderer *renderer, const SDL_Color fgcolor)
+
+    std::unordered_map< CacheKeyType, RenderCacheObject > RenderCache;
+    void AddToCache(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, const SDL_Color fgcolor)
     {
         RenderCache.emplace ( CreateKey(letter,fgcolor), RenderCacheObject(letter, font, renderer, fgcolor) );
     }
-    std::string CreateKey(const std::string &letter, const SDL_Color fgcolor)
+
+    /*
+     *   b1       b2       b3       b4       b5       b6       b7       b8
+     *00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+     *
+    */
+    uint64_t CreateKey(const std::string &letter, const SDL_Color fgcolor)
     {
-        std::string n;
-        n.append(std::to_string(fgcolor.r));
-        n.append(std::to_string(fgcolor.g));
-        n.append(std::to_string(fgcolor.b));
-        n.append("_");
-        n.append(letter);
-        return n;
+        uint64_t rval = 0ULL;
+        switch (letter.size())
+        {
+        case 0:
+            break;
+        case 1:
+            rval |= (uint64_t)letter.at(0) << b1;
+            break;
+        case 2:
+            rval |= (uint64_t)letter.at(0) << b1;
+            rval |= (uint64_t)letter.at(1) << b2;
+            break;
+        case 3:
+            rval |= (uint64_t)letter.at(0) << b1;
+            rval |= (uint64_t)letter.at(1) << b2;
+            rval |= (uint64_t)letter.at(2) << b3;
+            break;
+        case 4:
+            rval |= (uint64_t)letter.at(0) << b1;
+            rval |= (uint64_t)letter.at(1) << b2;
+            rval |= (uint64_t)letter.at(2) << b3;
+            rval |= (uint64_t)letter.at(3) << b4;
+            break;
+        }
+        rval |= (uint64_t)fgcolor.a << b5;
+        rval |= (uint64_t)fgcolor.b << b6;
+        rval |= (uint64_t)fgcolor.g << b7;
+        rval |= (uint64_t)fgcolor.r << b8;
+        return rval;
     }
+
+
 public:
     std::chrono::high_resolution_clock::time_point LastCacheRefresh = std::chrono::high_resolution_clock::now();
-    std::unordered_map< std::string, RenderCacheObject> RenderCache;
+
+
     const float TextureMaxAgeMs = 2.0f;
     SDL_Texture* GetTexture(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
     {
@@ -124,7 +167,8 @@ public:
 
     void CleanCache()
     {
-        std::vector<std::string> deletelist;
+        //std::vector<uint64_t> deletelist;
+        std::vector<CacheKeyType> deletelist;
         for (auto& x: this->RenderCache)
         {
             //std::cout << "Debug: Age: " << x.second.GetAgeInMs() << std::endl;

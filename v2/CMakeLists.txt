@@ -67,7 +67,9 @@ add_custom_target(copy_assets
 
 
 add_executable(DungonsOfMorginarV2 src/main.cpp ${HEADER_FILES} ${PLATFORM_HEADER_FILES}
-    src/systems/namingsystem.cpp src/systems/namingsystem.hpp)
+    src/systems/namingsystem.cpp src/systems/namingsystem.hpp
+    src/systems/mapgeneratorsystem.hpp src/systems/mapgeneratorsystem.cpp
+    src/map/mapobject.hpp src/map/mapobject.cpp)
 target_link_libraries(DungonsOfMorginarV2 ${CMAKE_THREAD_LIBS_INIT} fmt::fmt-header-only)
 target_link_libraries(DungonsOfMorginarV2 ${SDL2_LIBRARIES} SDL2_ttf::SDL2_ttf)
 target_include_directories(DungonsOfMorginarV2 PRIVATE resources)

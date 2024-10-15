@@ -19,17 +19,18 @@ GameLoop::GameLoop()
     this->NativeTerminal->SetupNonBlockingTerminal();
     this->Term = std::make_shared<NonBlockingTerminal>(this->NativeTerminal);
 
+    std::vector<Location::SLocation> testmapexits;
+    testmapexits.push_back(std::make_shared<Location>(0, 3, 0));
+    testmapexits.push_back(std::make_shared<Location>(24, 3, 0));
+    testmapexits.push_back(std::make_shared<Location>(12, 15, 0));
     this->TestMap = std::make_shared<MapRegions>(
         "Prison Cell 352 øæå █▄▌▐▀█",
-        std::make_shared<Location>(0,0,0),
-        std::make_shared<Location>(16, 9, 0),
-    Tile::GRASS_OUTSIDE_GROUND);
+        testmapexits
+    );
+
     this->TestMap->Description = "You are in a prison cell, there is a table in the middle of the room.";
     this->TestMap->AddWallsToRoom();
-    MapObject n0;
-    n0.StartLocation = std::make_shared<Location>(5,5,0);
-    n0.StopLocation = std::make_shared<Location>(7,6,0);
-    this->TestMap->MapObjects.push_back(n0);
+
 
 
 
@@ -256,7 +257,7 @@ void GameLoop::MainEventWorker()
             {
                 if (n->GetTypeName() == Character::TypeName)
                 {
-                    //std::cout << n->GetRealObject<Character>()->Mastrubate() << std::endl;
+                    //n->GetRealObject<Character>()->Update(TickCounter);
                 }
                 else if (n->GetTypeName() == Mouse::TypeName)
                 {

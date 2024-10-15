@@ -115,6 +115,15 @@ namespace DofM
             );
         }
 
+        SLocation OffsetLocation(SLocation offsetlocation)
+        {
+            return std::make_shared<Location>(
+                this->X + offsetlocation->X,
+                this->Y + offsetlocation->Y,
+                this->Z + offsetlocation->Z
+                );
+        }
+
         ScreenPos ReturnAsScreenPos(int offsetcol = 0, int offsetrow = 0)
         {
             int col = this->X + offsetcol;

@@ -10,19 +10,7 @@ namespace DofM
     class Tile
     {
     public:
-        enum TileTypes
-        {
-            WALL,
-            GRASS_OUTSIDE_GROUND,
-            GRAVEL_OUTSIDE_GROUND,
-            WATER_OUTSIDE_GROUND,
-            STONE_INCAVE_GROUND,
-            CARPET_INHOUSE_FLOOR,
-            WOOD_INHOUSE_FLOOR,
-        }
-        TileType = TileTypes::GRASS_OUTSIDE_GROUND;
-
-        enum MovementSpeeds
+        enum class MovementSpeeds
         {
             FAST,
             NORMAL,
@@ -30,28 +18,47 @@ namespace DofM
             SWIMMING,
             BLOCKED
         };
+        enum class TileTypes
+        {
+            EMPTY,
+            WALL,
+            GRASS_OUTSIDE_GROUND,
+            GRAVEL_OUTSIDE_GROUND,
+            WATER_OUTSIDE_GROUND,
+            STONE_INCAVE_GROUND,
+            CARPET_INHOUSE_FLOOR,
+            WOOD_INHOUSE_FLOOR,
+            DOOR,
+        };
+        TileTypes TileType = TileTypes::GRASS_OUTSIDE_GROUND;
+        MovementSpeeds MovementSpeed = MovementSpeeds::NORMAL;
+        Tile() { }
+        Tile(Tile::TileTypes type, Tile::MovementSpeeds speed)
+            : TileType(type), MovementSpeed(speed)
+        {
 
+        }
         // Calculate stamina usage based on ground type -retract form stamina pool from all living
         // at 0-ish they need to sleep, ai and human
         MovementSpeeds GetTileCost()
         {
             switch (this->TileType)
             {
-                case GRASS_OUTSIDE_GROUND:
+            case TileTypes::GRASS_OUTSIDE_GROUND:
                 return MovementSpeeds::NORMAL;
                     break;
-                case GRAVEL_OUTSIDE_GROUND:
+                case TileTypes::GRAVEL_OUTSIDE_GROUND:
                     return MovementSpeeds::NORMAL;
                     break;
-                case WATER_OUTSIDE_GROUND:
+                case TileTypes::WATER_OUTSIDE_GROUND:
                     return MovementSpeeds::SWIMMING;
                     break;
-                case STONE_INCAVE_GROUND:
-                case CARPET_INHOUSE_FLOOR:
-                case WOOD_INHOUSE_FLOOR:
+                case TileTypes::STONE_INCAVE_GROUND:
+                case TileTypes::CARPET_INHOUSE_FLOOR:
+                case TileTypes::WOOD_INHOUSE_FLOOR:
                     return MovementSpeeds::FAST;
                     break;
-                case WALL:
+                case TileTypes::WALL:
                     return MovementSpeeds::BLOCKED;
             }
         }

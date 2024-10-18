@@ -73,18 +73,6 @@ namespace DofM
         {
             this->IsRunning = false;
         }
-        void StartIO()
-        {
-            this->IOMutex.lock();
-        }
-
-        void StopIO()
-        {
-            this->IOMutex.unlock();
-        }
-        std::mutex IOMutex;
-
-
 
 
     protected:
@@ -93,7 +81,6 @@ namespace DofM
         bool IsInNonBlockingMode = false;
 
 
-        std::mutex DrawMutex;
 
         std::shared_ptr<ITerminal> Terminal;
 
@@ -101,18 +88,13 @@ namespace DofM
 
         unsigned int ScreenBufferLength;
         std::vector<ScreenCharacter> ScreenBuffer;
+        std::vector<ScreenCharacter> DrawScreenBuffer;
         void ResizeScreenBuffer()
         {
-            this->DrawMutex.lock();
-            this->LiveScreenBuffer.clear();
             this->ScreenBufferLength = this->RowMax * this->ColMax;
-
             this->ScreenBuffer.clear();
             this->ScreenBuffer.resize(this->ScreenBufferLength);
             for(int x = 0; x >this->ScreenBufferLength;x++) this->ScreenBuffer.push_back(ScreenCharacter());
-
-
-            this->DrawMutex.unlock();
         }
         void ClearScreenBuffer()
         {
@@ -121,13 +103,6 @@ namespace DofM
                 n.Reset();
             }
         }
-
-
-
-
-
-        std::map<std::string, std::string> LiveScreenBuffer;
-
 
         unsigned int GetBufferPosition(ScreenPos pos)
         {
@@ -149,17 +124,22 @@ namespace DofM
             return pos;
         }
         unsigned int RedrawCounter = 0;
+        std::mutex DrawLock;
 
     public:
+        std::mutex& GetLock()
+        {
+            return this->DrawLock;
+        }
         unsigned short int RowMax = USHRT_MAX;
         unsigned short int ColMax = USHRT_MAX;
 
         void ReadTerminalSize();
 
+        void FlipDrawbuffer();
         void Redraw();
 
-        void WriteToBuffer(std::string text, ScreenPos pos, SDL_Color fg , int priority = 10);
-        void WriteToBuffer(std::string text, ScreenPos pos);
+        void WriteToBuffer(std::string text, ScreenPos pos, SDL_Color fg = White , int priority = 10);
 
 
         void CheckIfOnScreen(ScreenPos pos, unsigned int textlength)

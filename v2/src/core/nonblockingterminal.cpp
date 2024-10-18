@@ -21,52 +21,46 @@ namespace DofM
     {
     }
 
-    void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos)
-    {
-        std::vector<TermRendringAttrs> emptyattr;
-        this->WriteToBuffer(text, pos, White);
-    }
+
     void NonBlockingTerminal::WriteToBuffer(std::string text, ScreenPos pos, SDL_Color fg, int priority)
     {
         // TODO:  Implement "z-index" of priorty to force text on top (not allow overwrite over higher prioirty)
         if (!this->IsReady)
+        {
             return;
-        this->DrawMutex.lock();
+        }
 
         this->CheckIfOnScreen(pos, text.length());
 
         unsigned int bufferstartindex = this->GetBufferPosition(pos);
-        unsigned int cleanbufferstartindex = bufferstartindex;
-
         // should be one for loop
         try
         {
-        char* str = (char*)text.c_str();
-        char* str_i = str;                  // string iterator
-        char* end = str+strlen(str)+1;      // end iterator
-        do
-        {
-            uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
-            if (code == 0)
-                continue;
-
-            char symbol[5] = {0};
-            utf8::append(code, symbol); // copy code to symbol
-            std::string newchar(symbol);
-            if (priority <= this->ScreenBuffer[bufferstartindex].Priority)
+            char* str = (char*)text.c_str();
+            char* str_i = str;                  // string iterator
+            char* end = str+strlen(str)+1;      // end iterator
+            do
             {
-                this->ScreenBuffer[bufferstartindex].Color = fg;
-                this->ScreenBuffer[bufferstartindex].Character = newchar;
-                this->ScreenBuffer[bufferstartindex].Priority = priority;
-            }
-            bufferstartindex++;
+                uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
+                if (code == 0)
+                    continue;
+
+                char symbol[5] = {0};
+                utf8::append(code, symbol); // copy code to symbol
+                std::string newchar(symbol);
+                if (priority <= this->ScreenBuffer[bufferstartindex].Priority)
+                {
+                    this->ScreenBuffer[bufferstartindex].Color = fg;
+                    this->ScreenBuffer[bufferstartindex].Character = newchar;
+                    this->ScreenBuffer[bufferstartindex].Priority = priority;
+                }
+                bufferstartindex++;
+            } while ( str_i < end );
         }
-        while ( str_i < end );
-        }
-        catch(const std::exception& e)  {
+        catch(const std::exception& e)
+        {
             fmt::print("Error: {}", e.what());
         }
-        this->DrawMutex.unlock();
     }
 
     void NonBlockingTerminal::ReadTerminalSize()
@@ -101,40 +95,41 @@ namespace DofM
             //this->Redraw();
         }
     }
-
+    void NonBlockingTerminal::FlipDrawbuffer()
+    {
+        // Copy to drawbuffer - we should move this.
+        this->DrawScreenBuffer.clear();
+        for (int i=0; i<ScreenBuffer.size(); i++)
+            this->DrawScreenBuffer.push_back(ScreenBuffer[i]);
+        this->ClearScreenBuffer();
+    }
     void NonBlockingTerminal::Redraw()
     {
+        this->FlipDrawbuffer();
         if (!this->IsReady)
             return;
         if ((RedrawCounter % 10) == 0)
         {
             this->ReadTerminalSize();
         }
-        this->DrawMutex.lock();
+
         this->Terminal->ClearScreen();
-        std::string outbuffer;
 
         unsigned int row = 0;
         unsigned int linecursor = -1; // because we increase before print - we need to start on -1
-        unsigned int buffercursor = 0;
-        for (auto &c : this->ScreenBuffer)
+
+
+        for (auto &c : this->DrawScreenBuffer)
         {
-            outbuffer += c.Character;
             linecursor++;
             if (linecursor >= this->ColMax)
             {
-
-                outbuffer.clear();
                 linecursor = 0;
                 row++;
             }
-            this->Terminal->PrintLetter(linecursor, row, c.Character, c.Color);
-            buffercursor++;
-             //outbuffer += '\n';
+            this->Terminal->PrintLetter(ScreenPos(linecursor, row), c.Character, c.Color);
         }
         this->Terminal->UpdateScreen();
-        this->ClearScreenBuffer();
-        this->DrawMutex.unlock();
         RedrawCounter++;
     }
 

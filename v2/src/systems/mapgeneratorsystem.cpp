@@ -35,6 +35,7 @@ bool MapGeneratorSystem::NonDuplicateVectorPush(MapObject::SMapObject mo, std::v
             return false;
         }
     }
+    fmt::print("Adding: {}\n", mo->Point->ToString());
     roomvector.push_back(mo);
     return true;
 }
@@ -188,7 +189,7 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
                 auto t1 = std::make_shared<MapObject>();
                 t1->Point = std::make_shared<Location>(currentx, currenty, 0);
                 t1->Tile.TileType = Tile::TileTypes::STONE_INCAVE_GROUND;
-                fmt::print("Adding: {} -> {}\n", t1->Point->ToString(), secondloc->ToString());
+
                 this->NonDuplicateVectorPush(t1, rval);
 
 
@@ -208,12 +209,18 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
                     {
                     case ops::INC:
                         if (val == maxval)
+                        {
+                            fmt::print("ERROR!");
                             return false;
+                        }
                         val++;
                         break;
                     case ops::DEC:
                         if (val == 0)
+                        {
+                            fmt::print("ERROR!");
                             return false;
+                        }
                         val--;
                         break;
                     }
@@ -225,12 +232,12 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
 
                 if (canxmove && canymove)
                 {
-                    auto movedice = this->ToolsObject.RndRange(1, 6) > 3 ? "MOVE_X" : "MOVE_Y";
+                    auto movedice = this->ToolsObject.RndRange(1, 6) > 3 ? std::string("MOVE_X") : std::string("MOVE_Y");
                     if (movedice == "MOVE_X")
                     {
                         move(xop, currentx, maxx);
                     }
-                    if (movedice == "MOVE_Y")
+                    else if (movedice == "MOVE_Y")
                     {
                         move(yop, currenty, maxy);
                     }
@@ -241,7 +248,7 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
                     {
                         move(xop, currentx, maxx);
                     }
-                    if (canymove)
+                    else if (canymove)
                     {
                         move(yop, currenty, maxy);
                     }

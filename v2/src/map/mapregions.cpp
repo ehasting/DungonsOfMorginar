@@ -71,7 +71,7 @@ Location::SLocation MapRegions::GetRandomLocationInsideRoom()
 
 void MapRegions::DrawMap(std::shared_ptr<NonBlockingTerminal> term, ScreenPos &drawstart)
 {
-    term->WriteToBuffer(fmt::format("Room: {}", this->UniqueName), ScreenPos(0,0).AddOffset(drawstart), {255,0,64,255});
+    term->WriteToBuffer(fmt::format("Room: {} (room objects: {})", this->UniqueName, this->TileList.size()), ScreenPos(0,0).AddOffset(drawstart), {255,0,64,255});
     drawstart.IncreaseRow();
     term->WriteToBuffer(fmt::format("Description: {}", "Nothing right now"), ScreenPos(0,0).AddOffset(drawstart), {128,200,64,255});
     drawstart.IncreaseRow();

@@ -21,7 +21,7 @@ GameLoop::GameLoop()
 
     std::vector<Location::SLocation> testmapexits;
     testmapexits.push_back(std::make_shared<Location>(0, 3, 0));
-    testmapexits.push_back(std::make_shared<Location>(24, 3, 0));
+    //testmapexits.push_back(std::make_shared<Location>(24, 3, 0));
     testmapexits.push_back(std::make_shared<Location>(12, 15, 0));
     this->TestMap = std::make_shared<MapRegions>(
         "Prison Cell 352 øæå █▄▌▐▀█",

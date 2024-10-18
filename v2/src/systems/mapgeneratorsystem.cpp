@@ -29,6 +29,9 @@ bool MapGeneratorSystem::NonDuplicateVectorPush(MapObject::SMapObject mo, std::v
     {
         if (mo->Point->IsSame(n->Point))
         {
+            fmt::print("Duplicate found {} (in list: {})\n", n->Point->ToString(), mo->Point->ToString());
+            //mo->MapSymbol = "-";
+            //roomvector.push_back(mo);
             return false;
         }
     }
@@ -42,18 +45,11 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
 
 
     std::vector<MapObject::SMapObject> rval;
-    int tiles = this->ToolsObject.RndRange(12,24);
-    if (( (tiles+exits.size()) % 2) != 0)
-        tiles++;
     std::vector<Location::SLocation> starttiles;
+
+
     for(auto &n : exits)
     {
-        auto t1 = std::make_shared<MapObject>();
-        t1->Point = std::make_shared<Location>(n->X,n->Y,0);
-        t1->Tile.TileType = Tile::TileTypes::DOOR;
-        t1->MapSymbol = "¤";
-        this->NonDuplicateVectorPush(t1, rval);
-        starttiles.push_back(t1->Point);
         if (maxx < n->X)
         {
             maxx = n->X;
@@ -63,16 +59,46 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
             maxy = n->Y;
         }
     }
+
+    int connecttilex = this->ToolsObject.RndRange(maxx/4, maxx/4*3);
+    int connecttiley = this->ToolsObject.RndRange(maxy/4, maxy/4*3);
+
+    auto tilenorth = std::make_shared<MapObject>();
+    tilenorth->Point = std::make_shared<Location>(connecttilex,connecttiley,00);
+    tilenorth->Tile.TileType = Tile::TileTypes::STONE_INCAVE_GROUND;
+    tilenorth->MapSymbol = "T";
+
+    //this->NonDuplicateVectorPush(t1, rval);
+    for(auto &n : exits)
+    {
+        auto t1 = std::make_shared<MapObject>();
+        t1->Point = std::make_shared<Location>(n->X,n->Y,0);
+        t1->Tile.TileType = Tile::TileTypes::DOOR;
+        t1->MapSymbol = "¤";
+        this->NonDuplicateVectorPush(t1, rval);
+        starttiles.push_back(t1->Point);
+        starttiles.push_back(tilenorth->Point);
+    }
+
+    this->NonDuplicateVectorPush(tilenorth, rval);
+    // Determine pair-number for additional tiles to generate as spawn points for hallway generator
+    int tiles = this->ToolsObject.RndRange(0, 0);
+    if (( (tiles+starttiles.size()) % 2) != 0)
+        tiles++;
+
+
     for (int x  = 0; x < tiles; x++)
     {
-        int tilesx = this->ToolsObject.RndRange(1,maxx);
-        int tilesy = this->ToolsObject.RndRange(1,maxy);
+        int tilesx = this->ToolsObject.RndRange(1, maxx);
+        int tilesy = this->ToolsObject.RndRange(1, maxy);
         auto t1 = std::make_shared<MapObject>();
-        t1->Point = std::make_shared<Location>(tilesx,tilesy,00);
+        t1->Point = std::make_shared<Location>(tilesx, tilesy, 0);
         t1->Tile.TileType = Tile::TileTypes::WALL;
         this->NonDuplicateVectorPush(t1, rval);
         starttiles.push_back(t1->Point);
     }
+
+
 
     std::vector<Location::SLocation>::iterator it;
 
@@ -111,36 +137,33 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
     {
         bool foundwall = false;
         auto firstloc = (*it);
-        unsigned int startx = (*it)->X;
-        unsigned int starty = (*it)->Y;
+        unsigned int currentx = (*it)->X;
+        unsigned int currenty = (*it)->Y;
         it++;
         auto secondloc = (*it);
         unsigned int stopx = (*it)->X;
         unsigned int stopy = (*it)->Y;
         it++;
 
-        fmt::print("{} -> {}\n", firstloc->ToString(), secondloc->ToString());
+        fmt::print("Next Tile bundle: {} -> {}\n", firstloc->ToString(), secondloc->ToString());
         xop = ops::INC, yop = ops::INC;
-        if (startx > stopx)
+        if (currentx > stopx)
         {
             xop = ops::DEC;
         }
-        if (starty > stopy)
+        if (currenty > stopy)
         {
             yop = ops::DEC;
         }
         int retrycount = 0;
         while(!foundwall)
         {
-
-            //fmt::print("Retry count: {}\n", retrycount);
-            retrycount = 0;
-            auto nextloc = std::make_shared<Location>(startx,stopy,00);
+            auto nextloc = std::make_shared<Location>(currentx, currenty, 0);
             if (nextloc->IsSame(secondloc))
             {
-                fmt::print("Found second loc\n");
-                foundwall = true;
-                if (this->ToolsObject.RndRange(0,24) > 12)
+
+                bool enableroomgenerator = false;
+                if (this->ToolsObject.RndRange(0,24) > 12 && enableroomgenerator)
                 {
                     // Generate room - but clamp the locations to within max/min of the map that is defined by the exits.
                     // or 8 x 8 if lack of exits.
@@ -152,33 +175,25 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
                         roomendy = roomendy - ((nextloc->Y + roomendy) - maxy);
 
                     auto roomendloc = nextloc->OffsetLocation(roomendx, roomendy, 0);
-                    fmt::print("Generate room on {} x {} -> {} x {}\n",nextloc->X, nextloc->Y, roomendloc->X, roomendloc->Y);
+                    fmt::print("Generate room on {} x {} -> {} x {}\n", nextloc->X, nextloc->Y, roomendloc->X, roomendloc->Y);
                     this->GenerateRoom(nextloc, roomendloc, rval);
                 }
+
+                foundwall = true; // could be a break, we will go back to outer loop
                 continue;
             }
             else
             {
+
                 auto t1 = std::make_shared<MapObject>();
-                t1->Point = std::make_shared<Location>(startx,starty,00);
-                fmt::print("{} ({}) x={}, y={}\n", t1->Point->ToString(), secondloc->ToString(), ops_tostring(xop), ops_tostring(yop));
+                t1->Point = std::make_shared<Location>(currentx, currenty, 0);
                 t1->Tile.TileType = Tile::TileTypes::STONE_INCAVE_GROUND;
-                // t1.MapSymbol = "X";
+                fmt::print("Adding: {} -> {}\n", t1->Point->ToString(), secondloc->ToString());
                 this->NonDuplicateVectorPush(t1, rval);
 
-            retry_move:
-                retrycount++;
-                bool nextmove = this->ToolsObject.RndRange(0,24) > 12;
-                bool xatend = false;
-                bool yatend = false;
-                if (startx == stopx)
-                {
-                    xatend = true;
-                }
-                if (starty == stopy)
-                {
-                    yatend = true;
-                }
+
+                bool xatend = currentx == stopx;
+                bool yatend = currenty == stopy;
 
                 if (xatend && yatend)
                 {
@@ -186,42 +201,49 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
                     continue;
                 }
 
-                if (nextmove && !xatend)
+
+                auto move = [](ops &currentop, unsigned int &val, int &maxval)
                 {
-                    if (startx != stopx)
+                    switch (currentop)
                     {
-                        switch (xop)
-                        {
-                        case ops::INC:
-                            if (startx == maxx)
-                                goto retry_move;
-                            startx++;
-                            break;
-                        case ops::DEC:
-                            if (startx == 0)
-                                goto retry_move;
-                            startx--;
-                            break;
-                        }
+                    case ops::INC:
+                        if (val == maxval)
+                            return false;
+                        val++;
+                        break;
+                    case ops::DEC:
+                        if (val == 0)
+                            return false;
+                        val--;
+                        break;
+                    }
+                    return true;
+                };
+
+                auto canxmove = (!xatend) && (currentx != stopx);
+                auto canymove = (!yatend) && (currenty != stopy);
+
+                if (canxmove && canymove)
+                {
+                    auto movedice = this->ToolsObject.RndRange(1, 6) > 3 ? "MOVE_X" : "MOVE_Y";
+                    if (movedice == "MOVE_X")
+                    {
+                        move(xop, currentx, maxx);
+                    }
+                    if (movedice == "MOVE_Y")
+                    {
+                        move(yop, currenty, maxy);
                     }
                 }
-                else if (!yatend)
+                else
                 {
-                    if (starty != stopy)
+                    if (canxmove)
                     {
-                        switch (yop)
-                        {
-                        case ops::INC:
-                            if (starty == maxy)
-                                goto retry_move;
-                            starty++;
-                            break;
-                        case ops::DEC:
-                            if (starty == 0)
-                                goto retry_move;
-                            starty--;
-                            break;
-                        }
+                        move(xop, currentx, maxx);
+                    }
+                    if (canymove)
+                    {
+                        move(yop, currenty, maxy);
                     }
                 }
             }

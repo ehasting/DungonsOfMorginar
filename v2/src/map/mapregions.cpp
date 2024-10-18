@@ -81,7 +81,7 @@ void MapRegions::DrawMap(std::shared_ptr<NonBlockingTerminal> term, ScreenPos &d
     {
         if (n->Tile.TileType == Tile::TileTypes::EMPTY)
         {
-            term->WriteToBuffer(" ", n->Point->ReturnAsScreenPos().AddOffset(drawstart));
+            term->WriteToBuffer("E", n->Point->ReturnAsScreenPos().AddOffset(drawstart));
         }
         else
         {

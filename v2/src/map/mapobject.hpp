@@ -7,6 +7,7 @@ namespace DofM
 class MapObject
 {
 public:
+    ~MapObject();
     typedef std::shared_ptr<MapObject> SMapObject;
     Location::SLocation Point;
     std::string MapSymbol = "░";

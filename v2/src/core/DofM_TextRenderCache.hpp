@@ -85,7 +85,12 @@ private:
     std::unordered_map< CacheKeyType, RenderCacheObject > RenderCache;
     void AddToCache(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, const SDL_Color fgcolor)
     {
-        RenderCache.emplace ( CreateKey(letter,fgcolor), RenderCacheObject(letter, font, renderer, fgcolor) );
+        auto key = CreateKey(letter,fgcolor);
+        if (letter == "0")
+        {
+        fmt::print("Making cache on key: {} ({})\n", letter, key);
+        }
+        RenderCache.emplace (key , RenderCacheObject(letter, font, renderer, fgcolor) );
     }
 
     /*

@@ -30,6 +30,12 @@ namespace DofM
             ScreenPos rval(_col + offset.Col(), _row + offset.Row());
             return rval;
         }
+
+        std::string ToString()
+        {
+            return fmt::format("{} x {}", this->_col, this->_row);
+        }
+
         unsigned int Row()
         {
             return this->_row;

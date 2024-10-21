@@ -76,7 +76,7 @@ GameLoop::GameLoop()
     this->DynamicObjects->push_back(m11);
     this->DynamicObjects->push_back(m12);
 
-    this->MainEventThread = std::make_shared<std::thread>([this]{ this->MainEventWorker(); });
+    //this->MainEventThread = std::make_shared<std::thread>([this]{ this->MainEventWorker(); });
     this->InputProcessThread = std::make_shared<std::thread>([this] { this->InputProcessorWorker(); });
 
 }
@@ -178,7 +178,7 @@ void GameLoop::DrawLoopWorker()
         int lineseparator = 24;
         auto innermapoffset = ScreenPos(5,5);
         auto outermapoffset = ScreenPos(4,4);
-        next_tick = SDL_GetTicks() + (1000 / 20);
+        next_tick = SDL_GetTicks() + (1000 / 10);
 
         this->TestMap->DrawMap(Term, outermapoffset);
 

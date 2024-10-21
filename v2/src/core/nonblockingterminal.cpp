@@ -54,6 +54,10 @@ namespace DofM
                     this->ScreenBuffer[bufferstartindex].Character = newchar;
                     this->ScreenBuffer[bufferstartindex].Priority = priority;
                 }
+                else
+                {
+                    fmt::print("Ignoring: {}\n", pos.ToString());
+                }
                 bufferstartindex++;
             } while ( str_i < end );
         }
@@ -66,10 +70,12 @@ namespace DofM
     void NonBlockingTerminal::ReadTerminalSize()
     {
         unsigned short maxrow, maxcol;
+
         this->Terminal->ReadPlatformNativeTerminalSize(maxrow, maxcol);
 
         // endline steals a hidden character which wraps in terminal, rendring without gains an additional char.
         unsigned int endlineadjust = 0;
+
         // Find terminal window size.
         bool ischanged = false;
 
@@ -79,6 +85,7 @@ namespace DofM
             this->RowMax = maxrow-endlineadjust;
             ischanged = true;
         }
+
         // update if changed
         if (this->ColMax != maxcol-endlineadjust)
         {
@@ -95,6 +102,7 @@ namespace DofM
             //this->Redraw();
         }
     }
+
     void NonBlockingTerminal::FlipDrawbuffer()
     {
         // Copy to drawbuffer - we should move this.
@@ -103,6 +111,7 @@ namespace DofM
             this->DrawScreenBuffer.push_back(ScreenBuffer[i]);
         this->ClearScreenBuffer();
     }
+
     void NonBlockingTerminal::Redraw()
     {
         this->FlipDrawbuffer();

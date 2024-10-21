@@ -39,7 +39,7 @@
  */
 namespace DofM
 {
-    const SDL_Color White = {255,255,255,255};
+    const SDL_Color White = {255, 255, 255, 255};
     class ScreenCharacter
     {
     public:
@@ -89,13 +89,15 @@ namespace DofM
         unsigned int ScreenBufferLength;
         std::vector<ScreenCharacter> ScreenBuffer;
         std::vector<ScreenCharacter> DrawScreenBuffer;
+
         void ResizeScreenBuffer()
         {
             this->ScreenBufferLength = this->RowMax * this->ColMax;
             this->ScreenBuffer.clear();
             this->ScreenBuffer.resize(this->ScreenBufferLength);
-            for(int x = 0; x >this->ScreenBufferLength;x++) this->ScreenBuffer.push_back(ScreenCharacter());
+            for(int x = 0; x >this->ScreenBufferLength; x++) this->ScreenBuffer.push_back(ScreenCharacter());
         }
+
         void ClearScreenBuffer()
         {
             for(auto &n : this->ScreenBuffer)
@@ -113,6 +115,7 @@ namespace DofM
             }
             return rval;
         }
+
         ScreenPos GetScreenPosition(unsigned int bufferposition)
         {
             unsigned int row = std::floor<unsigned int>(bufferposition / this->ColMax);
@@ -123,6 +126,7 @@ namespace DofM
             pos.SetCol(col);
             return pos;
         }
+
         unsigned int RedrawCounter = 0;
         std::mutex DrawLock;
 
@@ -131,16 +135,17 @@ namespace DofM
         {
             return this->DrawLock;
         }
+
         unsigned short int RowMax = USHRT_MAX;
         unsigned short int ColMax = USHRT_MAX;
 
         void ReadTerminalSize();
 
         void FlipDrawbuffer();
+
         void Redraw();
 
         void WriteToBuffer(std::string text, ScreenPos pos, SDL_Color fg = White , int priority = 10);
-
 
         void CheckIfOnScreen(ScreenPos pos, unsigned int textlength)
         {

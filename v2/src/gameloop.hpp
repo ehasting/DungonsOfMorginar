@@ -46,6 +46,7 @@ namespace DofM
         std::shared_ptr<NonBlockingTerminal> Term;
         std::stringstream TextCommandBuffer;
         void MainEventWorker();
+        void MainEventInner();
         void DrawLoopWorker();
         void InputProcessorWorker();
         ActionParser Parser;

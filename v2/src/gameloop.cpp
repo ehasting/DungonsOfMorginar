@@ -178,7 +178,7 @@ void GameLoop::DrawLoopWorker()
         int lineseparator = 24;
         auto innermapoffset = ScreenPos(5,5);
         auto outermapoffset = ScreenPos(4,4);
-        next_tick = SDL_GetTicks() + (1000 / 10);
+        next_tick = SDL_GetTicks() + (1000 / 2);
 
         this->TestMap->DrawMap(Term, outermapoffset);
 
@@ -213,7 +213,9 @@ void GameLoop::DrawLoopWorker()
                 auto cc = n->GetRealObject<Character>();
                 SDL_Color cColor = {255, 25, 64, 255};
                 auto pos = cc->ObjectLocation->ReturnAsScreenPos().AddOffset(outermapoffset);
+                //fmt::print("{}\n", pos.ToString());
                 Term->WriteToBuffer("0", pos, cColor, 1);
+
             }
 
             Term->WriteToBuffer(n->GetDescriptionLine(), ScreenPos(2, rowoffset), cColor);
@@ -235,40 +237,45 @@ void GameLoop::DrawLoopWorker()
     std::cout << "Stopping DrawLoopWorker" << std::endl;
 }
 
-void GameLoop::MainEventWorker()
+void GameLoop::MainEventInner()
 {
     long ticklengthms = 100;
     auto lasttick = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(now - lasttick).count();
+    if (dur >= ticklengthms)
+    {
+        std::lock_guard<std::mutex> guard(this->Term->GetLock());
+        this->TickCounter++;
+        // Update all DynamicObjects
+        for (auto n: *this->DynamicObjects)
+        {
+            if (n->GetTypeName() == Character::TypeName)
+            {
+                n->Update(TickCounter);
+                //n->GetRealObject<Character>()->Update(TickCounter);
+            }
+            else if (n->GetTypeName() == Mouse::TypeName)
+            {
+                n->Update(TickCounter);
+                //std::cout << n->GetRealObject<Mouse>()->Moustrubate() << std::endl;
+            }
+
+        }
+        // Update tick
+        lasttick = std::chrono::steady_clock::now();
+        this->MainEventFrameTimeNS = std::chrono::duration_cast<std::chrono::nanoseconds>(lasttick - now).count();
+    }
+
+}
+
+void GameLoop::MainEventWorker()
+{
     std::cout << "Starting MainEventWorker" << std::endl;
     while (this->IsRunning)
     {
-        auto now = std::chrono::steady_clock::now();
-        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(now - lasttick).count();
-        if (dur >= ticklengthms)
-        {
-            std::lock_guard<std::mutex> guard(this->Term->GetLock());
-            this->TickCounter++;
-            // Update all DynamicObjects
-            for (auto n: *this->DynamicObjects)
-            {
-                if (n->GetTypeName() == Character::TypeName)
-                {
-                    n->Update(TickCounter);
-                    //n->GetRealObject<Character>()->Update(TickCounter);
-                }
-                else if (n->GetTypeName() == Mouse::TypeName)
-                {
-                    n->Update(TickCounter);
-                    //std::cout << n->GetRealObject<Mouse>()->Moustrubate() << std::endl;
-                }
-
-            }
-            // Update tick
-            lasttick = std::chrono::steady_clock::now();
-            this->MainEventFrameTimeNS = std::chrono::duration_cast<std::chrono::nanoseconds>(lasttick - now).count();
-        }
+        this->MainEventInner();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
     }
     std::cout << "Stopping MainEventWorker" << std::endl;
 }

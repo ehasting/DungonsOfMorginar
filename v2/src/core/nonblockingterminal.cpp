@@ -30,9 +30,9 @@ namespace DofM
             return;
         }
 
-        this->CheckIfOnScreen(pos, text.length());
 
         unsigned int bufferstartindex = this->GetBufferPosition(pos);
+        unsigned int charcount = 0;
         // should be one for loop
         try
         {
@@ -44,10 +44,11 @@ namespace DofM
                 uint32_t code = utf8::next(str_i, end); // get 32 bit code of a utf-8 symbol
                 if (code == 0)
                     continue;
-
+                charcount++;
                 char symbol[5] = {0};
                 utf8::append(code, symbol); // copy code to symbol
                 std::string newchar(symbol);
+
                 if (priority <= this->ScreenBuffer[bufferstartindex].Priority)
                 {
                     this->ScreenBuffer[bufferstartindex].Color = fg;
@@ -65,6 +66,7 @@ namespace DofM
         {
             fmt::print("Error: {}", e.what());
         }
+        this->CheckIfOnScreen(pos, charcount);
     }
 
     void NonBlockingTerminal::ReadTerminalSize()
@@ -136,7 +138,7 @@ namespace DofM
                 linecursor = 0;
                 row++;
             }
-            this->Terminal->PrintLetter(ScreenPos(linecursor, row), c.Character, c.Color);
+            this->Terminal->PrintLetter(ScreenPos(linecursor, row), c);
         }
         this->Terminal->UpdateScreen();
         RedrawCounter++;

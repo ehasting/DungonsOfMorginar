@@ -1,5 +1,5 @@
-#ifndef SCREENCHARATER_H
-#define SCREENCHARATER_H
+#ifndef SCREENCHARACTER_H
+#define SCREENCHARACTER_H
 #include <SDL2/SDL.h>
 #include <string>
 
@@ -30,4 +30,4 @@ public:
     }
 };
 }
-#endif // SCREENCHARATER_H
+#endif // SCREENCHARACTER_H

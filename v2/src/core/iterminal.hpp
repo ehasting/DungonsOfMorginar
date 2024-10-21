@@ -10,7 +10,7 @@
 #include <queue>
 #include <SDL2/SDL.h>
 #include "core/screenpos.hpp"
-#include "core/screencharater.hpp"
+#include "core/screencharacter.hpp"
 
 namespace DofM
 {

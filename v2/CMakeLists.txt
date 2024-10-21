@@ -70,7 +70,7 @@ add_executable(DungonsOfMorginarV2 src/main.cpp ${HEADER_FILES} ${PLATFORM_HEADE
     src/systems/namingsystem.cpp src/systems/namingsystem.hpp
     src/systems/mapgeneratorsystem.hpp src/systems/mapgeneratorsystem.cpp
     src/map/mapobject.hpp src/map/mapobject.cpp
-    src/core/screencharater.hpp src/core/screencharater.cpp)
+    src/core/screencharacter.hpp src/core/screencharacter.cpp)
 target_link_libraries(DungonsOfMorginarV2 ${CMAKE_THREAD_LIBS_INIT} fmt::fmt-header-only)
 target_link_libraries(DungonsOfMorginarV2 ${SDL2_LIBRARIES} SDL2_ttf::SDL2_ttf)
 target_include_directories(DungonsOfMorginarV2 PRIVATE resources)

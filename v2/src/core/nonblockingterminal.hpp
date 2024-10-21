@@ -25,7 +25,7 @@
 #include "keycodes.hpp"
 #include "inputhandler.hpp"
 #include "iterminal.hpp"
-#include "screencharater.hpp"
+#include "screencharacter.hpp"
 
 /*
  * Usage:

@@ -86,7 +86,7 @@ void MapRegions::DrawMap(std::shared_ptr<NonBlockingTerminal> term, ScreenPos &d
         else
         {
 
-            term->WriteToBuffer(n->MapSymbol, n->Point->ReturnAsScreenPos().AddOffset(drawstart));
+            term->WriteToBuffer(n->MapSymbol(), n->Point->ReturnAsScreenPos().AddOffset(drawstart));
         }
     }
 }

@@ -6,12 +6,20 @@ namespace DofM
 {
 class MapObject
 {
+    std::string _MapSymbol = "░";
 public:
     ~MapObject();
     typedef std::shared_ptr<MapObject> SMapObject;
     Location::SLocation Point;
-    std::string MapSymbol = "░";
     DofM::Tile Tile;
+    void SetMapSymbol(std::string symb)
+    {
+        this->_MapSymbol = symb;
+    }
+    std::string MapSymbol() const
+    {
+        return _MapSymbol;
+    }
 };
 }
 #endif // MAPOBJECT_H

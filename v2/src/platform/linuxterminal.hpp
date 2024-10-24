@@ -62,23 +62,22 @@ namespace DofM
             SDL_RenderPresent(this->renderer);
         }
 
-        void PrintLetter(ScreenPos screenpos, ScreenCharacter& character) override
+        void PrintLetter(ScreenPos screenpos, ScreenCharacter& sc) override
         {
             if (screenpos.Row() * FontWidth > this->ScreenWidth)
             {
-                std::cout << fmt::format("Error letter on (x / y): {} / {} = {} ", screenpos.Col(), screenpos.Row(), character.Character) << std::endl;
+                std::cout << fmt::format("Error letter on (x / y): {} / {} = {} ", screenpos.Col(), screenpos.Row(), sc.Character) << std::endl;
                 std::cout << fmt::format("String length is {} which is too long for max width on {}", screenpos.Row() * FontWidth, this->ScreenWidth) << std::endl;
                 exit(1);
             }
-            auto texture = RenderCache.GetTexture(character.Character, this->font, this->renderer, character.Color);
-            //std::cout << fmt::format("{}{}{}{}_{}", fgcolor.r, fgcolor.g, fgcolor.b, fgcolor.a, text.c_str()) << std::endl;
+            auto texture = RenderCache.GetTexture(sc, this->font, this->renderer);
             SDL_Rect src = {0, 0, FontWidth, FontHeight};
             SDL_Rect dest = { (int)(screenpos.Col() * FontWidth), (int)(screenpos.Row() * FontHeight), FontWidth, FontHeight};
             SDL_RenderCopy(renderer, texture, &src, &dest);
         }
 
     private:
-        char ReadCharBuffer[2];
+        //char ReadCharBuffer[2];
         SDL_Window *window;
         SDL_Renderer *renderer;
         TTF_Font *font;

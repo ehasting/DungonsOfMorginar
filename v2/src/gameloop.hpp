@@ -51,7 +51,7 @@ namespace DofM
         void InputProcessorWorker();
         ActionParser Parser;
         DofM::NamingSystem Names;
-        long MainEventFrameTimeNS = 0;
+        double MainEventFrameTimeMS = 0;
 
 
     public:

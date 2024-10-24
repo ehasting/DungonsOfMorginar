@@ -31,9 +31,12 @@ namespace DofM
         void SetMap(MapRegions::SMapRegions map, bool placerandom = true)
         {
             this->ObjectMapRegion = map;
+            //fmt::print("[{}] Ref cnt. map {}\n", this->UniqueName, map.use_count());
             if (placerandom)
             {
-                this->ObjectLocation = map->GetRandomLocationInsideRoom();
+                // Copy object!! its returning a shared pointer - or we will start "moving" the tile
+                this->ObjectLocation = std::make_shared<Location>(*map->GetRandomLocationInsideRoom());
+                //fmt::print("Found {} location: {}\n",this->UniqueName, this->ObjectLocation->ToString());
             }
             else
             {

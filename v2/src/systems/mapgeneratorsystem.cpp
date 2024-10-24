@@ -67,7 +67,7 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
     auto tilenorth = std::make_shared<MapObject>();
     tilenorth->Point = std::make_shared<Location>(connecttilex,connecttiley,00);
     tilenorth->Tile.TileType = Tile::TileTypes::STONE_INCAVE_GROUND;
-    tilenorth->MapSymbol = "T";
+    tilenorth->SetMapSymbol("T");
 
     //this->NonDuplicateVectorPush(t1, rval);
     for(auto &n : exits)
@@ -75,7 +75,7 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
         auto t1 = std::make_shared<MapObject>();
         t1->Point = std::make_shared<Location>(n->X,n->Y,0);
         t1->Tile.TileType = Tile::TileTypes::DOOR;
-        t1->MapSymbol = "¤";
+        t1->SetMapSymbol("¤");
         this->NonDuplicateVectorPush(t1, rval);
         starttiles.push_back(t1->Point);
         starttiles.push_back(tilenorth->Point);
@@ -83,7 +83,7 @@ std::vector<MapObject::SMapObject> MapGeneratorSystem::GenerateMap(std::vector<L
 
     this->NonDuplicateVectorPush(tilenorth, rval);
     // Determine pair-number for additional tiles to generate as spawn points for hallway generator
-    int tiles = this->ToolsObject.RndRange(0, 0);
+    int tiles = this->ToolsObject.RndRange(3, 16);
     if (( (tiles+starttiles.size()) % 2) != 0)
         tiles++;
 

@@ -12,17 +12,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "fmt/xchar.h"
-constexpr uint8_t b1 = 8 * 7;
-constexpr uint8_t b2 = 8 * 6;
-constexpr uint8_t b3 = 8 * 5;
-constexpr uint8_t b4 = 8 * 4;
-constexpr uint8_t b5 = 8 * 3;
-constexpr uint8_t b6 = 8 * 2;
-constexpr uint8_t b7 = 8 * 1;
-constexpr uint8_t b8 = 0;
+#include "core/screencharacter.hpp"
 
-typedef uint64_t CacheKeyType;
-
+namespace DofM
+{
 class DofM_TextRenderCache
 {
 private:
@@ -30,10 +23,9 @@ private:
     {
     private:
         SDL_Texture *Texture;
-        std::string BackendChar;
+        ScreenCharacter ScreenChar;
         TTF_Font *fontcontext;
         SDL_Renderer *renderercontext;
-        SDL_Color color;
         bool FreeTextureOnDeconstruct = false;
 
     public:
@@ -42,24 +34,23 @@ private:
         RenderCacheObject(RenderCacheObject&& obj)
         {
             //std::cout << "Moving Texture cache object" << std::endl;
-            this->BackendChar = obj.BackendChar;
+            this->ScreenChar = obj.ScreenChar;
             this->fontcontext = obj.fontcontext;
             this->renderercontext = obj.renderercontext;
             this->Texture = obj.Texture;
             obj.FreeTextureOnDeconstruct = false;
         }
 
-        RenderCacheObject(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
+        RenderCacheObject(ScreenCharacter &sc, TTF_Font *font, SDL_Renderer *renderer)
         {
             //std::cout << "Creating Texture cache object" << std::endl;
-            this->BackendChar = letter;
+            this->ScreenChar = sc;
             this->fontcontext = font;
             this->renderercontext = renderer;
             //std::cout << "Creating Texture cache object" << std::endl;
-            SDL_Surface *text_surface = TTF_RenderUTF8_Blended(this->fontcontext, this->BackendChar.c_str(), fgcolor);
+            SDL_Surface *text_surface = TTF_RenderUTF8_Blended(this->fontcontext, this->ScreenChar.Character.c_str(), this->ScreenChar.Color);
             this->Texture = SDL_CreateTextureFromSurface(this->renderercontext, text_surface);
             SDL_FreeSurface(text_surface);
-            this->color = fgcolor;
         }
         SDL_Texture* GetTexture()
         {
@@ -82,15 +73,10 @@ private:
         }
     };
 
-    std::unordered_map< CacheKeyType, RenderCacheObject > RenderCache;
-    void AddToCache(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, const SDL_Color fgcolor)
+    std::unordered_map< uint64_t, RenderCacheObject > RenderCache;
+    void AddToCache(ScreenCharacter &sc, TTF_Font *font, SDL_Renderer *renderer)
     {
-        auto key = CreateKey(letter,fgcolor);
-        if (letter == "0")
-        {
-        fmt::print("Making cache on key: {} ({})\n", letter, key);
-        }
-        RenderCache.emplace (key , RenderCacheObject(letter, font, renderer, fgcolor) );
+        RenderCache.emplace ( sc.CreateKey() , RenderCacheObject(sc, font, renderer) );
     }
 
     /*
@@ -98,38 +84,7 @@ private:
      *00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
      *
     */
-    uint64_t CreateKey(const std::string &letter, const SDL_Color fgcolor)
-    {
-        uint64_t rval = 0ULL;
-        switch (letter.size())
-        {
-        case 0:
-            break;
-        case 1:
-            rval |= (uint64_t)letter.at(0) << b1;
-            break;
-        case 2:
-            rval |= (uint64_t)letter.at(0) << b1;
-            rval |= (uint64_t)letter.at(1) << b2;
-            break;
-        case 3:
-            rval |= (uint64_t)letter.at(0) << b1;
-            rval |= (uint64_t)letter.at(1) << b2;
-            rval |= (uint64_t)letter.at(2) << b3;
-            break;
-        case 4:
-            rval |= (uint64_t)letter.at(0) << b1;
-            rval |= (uint64_t)letter.at(1) << b2;
-            rval |= (uint64_t)letter.at(2) << b3;
-            rval |= (uint64_t)letter.at(3) << b4;
-            break;
-        }
-        rval |= (uint64_t)fgcolor.a << b5;
-        rval |= (uint64_t)fgcolor.b << b6;
-        rval |= (uint64_t)fgcolor.g << b7;
-        rval |= (uint64_t)fgcolor.r << b8;
-        return rval;
-    }
+
 
 
 public:
@@ -137,7 +92,7 @@ public:
 
 
     const float TextureMaxAgeMs = 2.0f;
-    SDL_Texture* GetTexture(const std::string &letter, TTF_Font *font, SDL_Renderer *renderer, SDL_Color fgcolor)
+    SDL_Texture* GetTexture(ScreenCharacter &sc, TTF_Font *font, SDL_Renderer *renderer)
     {
         SDL_Texture* rval;
 
@@ -146,14 +101,12 @@ public:
             CleanCache();
         }
 
-        auto lookupkey = CreateKey( letter, fgcolor);
-        if (RenderCache.find(lookupkey) == RenderCache.end())
+        if (RenderCache.find(sc.CreateKey()) == RenderCache.end())
         {
             //std::cout << "Adding Texture cache" << std::endl;
-            AddToCache( letter, font, renderer, fgcolor);
+            AddToCache( sc, font, renderer );
         }
-        rval = RenderCache.at(lookupkey).GetTexture();
-
+        rval = RenderCache.at(sc.CreateKey()).GetTexture();
 
         return rval;
     }
@@ -173,7 +126,7 @@ public:
     void CleanCache()
     {
         //std::vector<uint64_t> deletelist;
-        std::vector<CacheKeyType> deletelist;
+        std::vector<uint64_t> deletelist;
         for (auto& x: this->RenderCache)
         {
             //std::cout << "Debug: Age: " << x.second.GetAgeInMs() << std::endl;
@@ -190,5 +143,5 @@ public:
 
 };
 
-
+}
 #endif //DUNGONSOFMORGINAR_DOFM_TEXTRENDERCACHE_H

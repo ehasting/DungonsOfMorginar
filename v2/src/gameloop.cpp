@@ -15,7 +15,7 @@ namespace DofM
 GameLoop::GameLoop()
 {
     this->DynamicObjects = std::make_shared<std::vector<std::shared_ptr<DynamicObject>>>();
-    NativeTerminal = std::make_shared<LinuxTerminal>();
+    this->NativeTerminal = std::make_shared<LinuxTerminal>();
     this->NativeTerminal->SetupNonBlockingTerminal();
     this->Term = std::make_shared<NonBlockingTerminal>(this->NativeTerminal);
 
@@ -30,9 +30,6 @@ GameLoop::GameLoop()
 
     this->TestMap->Description = "You are in a prison cell, there is a table in the middle of the room.";
     this->TestMap->AddWallsToRoom();
-
-
-
 
     this->Hero = std::make_shared<Character>("Hero 2000", std::make_shared<Location>(1, 1, 1), this->DynamicObjects);
     this->Hero->SetMap(this->TestMap);
@@ -76,7 +73,7 @@ GameLoop::GameLoop()
     this->DynamicObjects->push_back(m11);
     this->DynamicObjects->push_back(m12);
 
-    //this->MainEventThread = std::make_shared<std::thread>([this]{ this->MainEventWorker(); });
+    this->MainEventThread = std::make_shared<std::thread>([this]{ this->MainEventWorker(); });
     this->InputProcessThread = std::make_shared<std::thread>([this] { this->InputProcessorWorker(); });
 
 }
@@ -164,12 +161,18 @@ void GameLoop::InputProcessorWorker()
 // Drawing related stuff needs to be here.
 void GameLoop::DrawLoopWorker()
 {
-    Uint32 next_tick = 0;
-    int sleep_ticks = 0;
+    int desired_fps = 15;
+    auto last_ticks = SDL_GetTicks();
     int ticks_to_death = 100;
     std::cout << "Starting DrawLoopWorker" << std::endl;
     while (this->IsRunning)
     {
+        // FPS Cap
+        if (SDL_GetTicks() - last_ticks < 1000/desired_fps)
+        {
+            SDL_Delay(1);
+            continue;
+        }
         //ticks_to_death--;
         //if (ticks_to_death == 0)
         //    this->IsRunning = false;
@@ -178,7 +181,6 @@ void GameLoop::DrawLoopWorker()
         int lineseparator = 24;
         auto innermapoffset = ScreenPos(5,5);
         auto outermapoffset = ScreenPos(4,4);
-        next_tick = SDL_GetTicks() + (1000 / 2);
 
         this->TestMap->DrawMap(Term, outermapoffset);
 
@@ -201,7 +203,7 @@ void GameLoop::DrawLoopWorker()
                 cColor = {red, green, blue, alpha};
                 if (cc->IsAlive())
                 {
-                    //Term->WriteToBuffer("☺", pos, cColor);
+                    Term->WriteToBuffer("☺", pos, cColor);
                 }
                 else
                 {
@@ -222,60 +224,59 @@ void GameLoop::DrawLoopWorker()
             rowoffset++;
         }
         Term->WriteToBuffer(fmt::format("Test buffer: {}", this->KeyLog), ScreenPos(7, rowoffset+1));
-        Term->WriteToBuffer(fmt::format("Tick delivered on {}ns", this->MainEventFrameTimeNS), ScreenPos(60, 0), {0,255,0,128});
+        Term->WriteToBuffer(fmt::format("Tick delivered on {:.4f}ms", this->MainEventFrameTimeMS), ScreenPos(60, 0), {0,255,0,128});
         {
             std::lock_guard<std::mutex> guard(this->Term->GetLock());
             Term->Redraw();
         }
-        sleep_ticks = next_tick - SDL_GetTicks();
-        if (sleep_ticks > 0)
-        {
-            SDL_Delay(sleep_ticks);
-        }
-        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        last_ticks = SDL_GetTicks();
     }
     std::cout << "Stopping DrawLoopWorker" << std::endl;
 }
 
 void GameLoop::MainEventInner()
 {
-    long ticklengthms = 100;
-    auto lasttick = std::chrono::steady_clock::now();
-    auto now = std::chrono::steady_clock::now();
-    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(now - lasttick).count();
-    if (dur >= ticklengthms)
+    std::lock_guard<std::mutex> guard(this->Term->GetLock());
+    this->TickCounter++;
+    // Update all DynamicObjects
+    for (auto n: *this->DynamicObjects)
     {
-        std::lock_guard<std::mutex> guard(this->Term->GetLock());
-        this->TickCounter++;
-        // Update all DynamicObjects
-        for (auto n: *this->DynamicObjects)
+        if (n->GetTypeName() == Character::TypeName)
         {
-            if (n->GetTypeName() == Character::TypeName)
-            {
-                n->Update(TickCounter);
-                //n->GetRealObject<Character>()->Update(TickCounter);
-            }
-            else if (n->GetTypeName() == Mouse::TypeName)
-            {
-                n->Update(TickCounter);
-                //std::cout << n->GetRealObject<Mouse>()->Moustrubate() << std::endl;
-            }
-
+            n->Update(TickCounter);
+            //n->GetRealObject<Character>()->Update(TickCounter);
         }
-        // Update tick
-        lasttick = std::chrono::steady_clock::now();
-        this->MainEventFrameTimeNS = std::chrono::duration_cast<std::chrono::nanoseconds>(lasttick - now).count();
-    }
+        else if (n->GetTypeName() == Mouse::TypeName)
+        {
+            n->Update(TickCounter);
+            //std::cout << n->GetRealObject<Mouse>()->CurrentDescription << std::endl;
+        }
 
+    }
 }
 
 void GameLoop::MainEventWorker()
 {
     std::cout << "Starting MainEventWorker" << std::endl;
+    long ticklengthms = 100;
+    auto lasttick = std::chrono::steady_clock::now();
+
+
+
+    // Update tick
+
     while (this->IsRunning)
     {
+        //1 ms == 1 000 000 ns
+        auto now = std::chrono::steady_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(now - lasttick).count();
         this->MainEventInner();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        lasttick = std::chrono::steady_clock::now();
+        this->MainEventFrameTimeMS = std::chrono::duration_cast<std::chrono::nanoseconds>(lasttick - now).count() / 1000000.0f;
+        auto sleepms = ((ticklengthms) - this->MainEventFrameTimeMS) * 1000000;
+        std::this_thread::sleep_for(std::chrono::nanoseconds((long)sleepms));
+
+
     }
     std::cout << "Stopping MainEventWorker" << std::endl;
 }

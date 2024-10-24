@@ -30,7 +30,6 @@ namespace DofM
             return;
         }
 
-
         unsigned int bufferstartindex = this->GetBufferPosition(pos);
         unsigned int charcount = 0;
         // should be one for loop
@@ -48,17 +47,19 @@ namespace DofM
                 char symbol[5] = {0};
                 utf8::append(code, symbol); // copy code to symbol
                 std::string newchar(symbol);
-
-                if (priority <= this->ScreenBuffer[bufferstartindex].Priority)
+                this->ScreenBuffer[bufferstartindex].SetScreenCharacter(newchar, fg, priority);
+                /*
+                if (this->ScreenBuffer[bufferstartindex].IsPrioritized(priority))
                 {
-                    this->ScreenBuffer[bufferstartindex].Color = fg;
-                    this->ScreenBuffer[bufferstartindex].Character = newchar;
-                    this->ScreenBuffer[bufferstartindex].Priority = priority;
+
+                    //this->ScreenBuffer[bufferstartindex] = ScreenCharacter(newchar, fg, priority);
                 }
                 else
                 {
                     fmt::print("Ignoring: {}\n", pos.ToString());
                 }
+                this->ScreenBuffer[bufferstartindex].FlagAsUsed();
+                */
                 bufferstartindex++;
             } while ( str_i < end );
         }
@@ -82,16 +83,16 @@ namespace DofM
         bool ischanged = false;
 
         // update if changed
-        if (this->RowMax != maxrow-endlineadjust)
+        if (this->RowMax != maxrow - endlineadjust)
         {
-            this->RowMax = maxrow-endlineadjust;
+            this->RowMax = maxrow - endlineadjust;
             ischanged = true;
         }
 
         // update if changed
-        if (this->ColMax != maxcol-endlineadjust)
+        if (this->ColMax != maxcol - endlineadjust)
         {
-            this->ColMax = maxcol-endlineadjust;
+            this->ColMax = maxcol - endlineadjust;
             ischanged = true;
         }
 
@@ -108,9 +109,7 @@ namespace DofM
     void NonBlockingTerminal::FlipDrawbuffer()
     {
         // Copy to drawbuffer - we should move this.
-        this->DrawScreenBuffer.clear();
-        for (int i=0; i<ScreenBuffer.size(); i++)
-            this->DrawScreenBuffer.push_back(ScreenBuffer[i]);
+        this->DrawScreenBuffer = this->ScreenBuffer;
         this->ClearScreenBuffer();
     }
 

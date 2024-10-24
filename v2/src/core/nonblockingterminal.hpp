@@ -42,6 +42,10 @@ namespace DofM
 {
     class NonBlockingTerminal
     {
+    private:
+        std::vector<ScreenCharacter> DrawScreenBuffer;
+        std::vector<ScreenCharacter> ScreenBuffer;
+
     public:
         NonBlockingTerminal(std::shared_ptr<ITerminal> terminaltype);
         ~NonBlockingTerminal();
@@ -49,7 +53,6 @@ namespace DofM
         {
             this->IsRunning = false;
         }
-
 
     protected:
         bool IsReady = false;
@@ -63,8 +66,8 @@ namespace DofM
         void ProcessKeyPressEventQueue();
 
         unsigned int ScreenBufferLength;
-        std::vector<ScreenCharacter> ScreenBuffer;
-        std::vector<ScreenCharacter> DrawScreenBuffer;
+
+
 
         void ResizeScreenBuffer()
         {

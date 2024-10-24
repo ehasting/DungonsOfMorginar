@@ -4,6 +4,7 @@
 
 #ifndef DUNGONSOFMORGINAR_TILE_HPP
 #define DUNGONSOFMORGINAR_TILE_HPP
+#include <string>
 
 namespace DofM
 {
@@ -37,6 +38,11 @@ namespace DofM
             : TileType(type), MovementSpeed(speed)
         {
 
+        }
+        std::string GetTileTypeLetter()
+        {
+            std::string xyz = "abcdefghijklmnopqrstuvwxyz";
+            return xyz.substr((int)this->TileType, 1);
         }
         // Calculate stamina usage based on ground type -retract form stamina pool from all living
         // at 0-ish they need to sleep, ai and human

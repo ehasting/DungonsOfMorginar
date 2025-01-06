@@ -7,3 +7,8 @@ edition = "2021"
 
 [dependencies]
 crossterm = "0.25"
+
+[dependencies.sdl2]
+git = "https://github.com/rust-sdl2/rust-sdl2"
+default-features = false
+features = ["ttf","image","gfx","mixer"]

@@ -14,6 +14,7 @@ use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::TryRecvError;
 use std::{thread, time};
+use std::sync::{Arc, Mutex};
 
 
 fn sleep(millis: u64) {
@@ -22,31 +23,51 @@ fn sleep(millis: u64) {
 }
 
 fn main() {
-    let mut processed_input_queue: VecDeque<char> = VecDeque::new();
+    let workload = Arc::new(Mutex::new(VecDeque::new()));
+    workload.lock().unwrap().push_back(0);
+
+    let thread_1_queue = workload.clone();
     println!("Hello, world!");
     let the_thread = thread::spawn(move || {
-        let reader = io::stdin();
-        let mut buffer = [0; 10];
-        loop {
+        let mut reader = io::stdin();
 
+        loop {
+            let mut buffer = [0; 10];
             let byte = reader.read(&mut buffer);
             if byte.is_ok()
             {
-                processed_input_queue.push_back(buffer);
+                buffer.iter().for_each(|&c| {
+                    if c == 0 {
+                        //thread_1_queue.lock().unwrap().push_back(c);
+                    }
+                    else {
+                        thread_1_queue.lock().unwrap().push_back(c);
+                    }
+
+                });
             }
             else {
                 sleep(50);
             }
         }
     });
-
+    let mut newline = false;
     loop {
-        let n = processed_input_queue.pop_front();
+        let n = workload.lock().unwrap().pop_front();
         if (n == None)
         {
-            sleep(2000);
+            if (newline)
+            {
+                println!("");
+                newline = false;
+            }
+            sleep(20);
         }
-        println!("{}", n);
+        else
+        {
+            print!("{}", n.unwrap() as char);
+            newline = true;
+        }
     }
     
 
